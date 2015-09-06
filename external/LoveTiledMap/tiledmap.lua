@@ -3,10 +3,13 @@
 -- NOTE : function ReplaceMapTileClass (tx,ty,oldTileType,newTileType,fun_callback) end
 -- NOTE : function TransmuteMap (from_to_table) end -- from_to_table[old]=new
 -- NOTE : function GetMousePosOnMap () return gMouseX+gCamX-gScreenW/2,gMouseY+gCamY-gScreenH/2 end
+--
+-- 2015-09-06 Added option to not use spritesheets and load single images instead // M.H
 
 kMapTileTypeEmpty = 0
 local floor = math.floor
 local ceil = math.ceil
+local using_spritesheets = false
 
 function TiledMap_Load (filepath)
 	spritepath_removeold = "../"
@@ -122,6 +125,22 @@ local function getTilesets(node)
 	return tiles
 end
 
+local function getTiles(node)
+	local tiles = {}
+	for k, sub in ipairs(node) do
+		if (sub.label == "tileset") then
+			for l, sub2 in ipairs(sub) do
+				if (sub2.label == "tile") then
+					-- Offset needed for some reason
+					tiles[tonumber(sub2.xarg.id) + 1] = sub2[1].xarg.source
+				end
+			end
+		end
+	end
+	return tiles
+end
+
+
 local function getLayers(node)
 	local layers = {}
 	for k, sub in ipairs(node) do
@@ -167,7 +186,12 @@ function TiledMap_Parse(filename)
       gMapHeight = tonumber(sub.xarg.height)
       gTileWidth = tonumber(sub.xarg.tilewidth)
       gTileHeight = tonumber(sub.xarg.tileheight)
-      local tiles = getTilesets(sub)
+      local tiles
+      if using_spritesheets then
+	  tiles = getTilesets(sub)
+      else
+	  tiles = getTiles(sub)
+      end
       local layers = getLayers(sub)
       return tiles, layers
     end
