@@ -11,7 +11,7 @@ gfx/tiles/license.txt).
 ### Tiled Map Loader ###
 Taken from https://github.com/cxong/LoveTiledMap
 
-see external/LoveTiledMap/
+See external/LoveTiledMap/.
 
 Distributed under the MIT license.
 
@@ -19,5 +19,6 @@ I've also extended this somewhat for my own
 evil purposes.
 
 ## License ##
-TBD 
+TBD (see LICENSE)
+
 
