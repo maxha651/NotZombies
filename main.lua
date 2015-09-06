@@ -1,5 +1,5 @@
 -- small demo for TiledMap loader
-love.filesystem.load("tiledmap.lua")()
+love.filesystem.load("external/LoveTiledMap/tiledmap.lua")()
 
 gKeyPressed = {}
 gCamX,gCamY = 100,100
