@@ -1,17 +1,18 @@
 love.filesystem.load("external/LoveTiledMap/tiledmap.lua")()
 
+love.filesystem.load("tiledobjects.lua")()
+
 gCamX,gCamY = 800,1200
 
 function love.load()
     TiledMap_Load("map/map01.tmx")
+    parseObjects("map/map01.tmx")
 end
 
 function love.keyreleased( key )
-    gKeyPressed[key] = nil
 end
 
 function love.keypressed( key, unicode ) 
-    gKeyPressed[key] = true 
 end
 
 function love.update( dt )

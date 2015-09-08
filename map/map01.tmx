@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="70" tileheight="70" nextobjectid="2">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="70" tileheight="70" nextobjectid="4">
  <tileset firstgid="1" name="Tiles" tilewidth="70" tileheight="146" tilecount="172">
   <tile id="0">
    <image width="70" height="70" source="../gfx/tiles/ropeHorizontal.png"/>
@@ -10524,5 +10524,6 @@
  </layer>
  <objectgroup name="Object Layer 1">
   <object id="1" x="280" y="1470" width="841" height="40"/>
+  <object id="2" x="618" y="1401" width="77" height="66"/>
  </objectgroup>
 </map>
