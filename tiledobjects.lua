@@ -76,18 +76,7 @@ function parseObjects(filename)
         end
     end
 
-    local physObjects = {}
-    for k, obj in ipairs(objects) do
-        physObjects[k] = love.physics.newRectangleShape(obj.x, 
-                                                        obj.y, 
-                                                        obj.width, 
-                                                        obj.height,
-                                                        0); --angle
-    end
-
-    print(string.format("Found %d physics objects", #physObjects))
-
-    return physObjects
+    return objects
 end
 
 
