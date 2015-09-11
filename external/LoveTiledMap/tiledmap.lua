@@ -50,8 +50,8 @@ function TiledMap_DrawNearCam (camx,camy)
             for y = miny,maxy do
                 local gfx = gTileGfx[TiledMap_GetMapTile(x + 1, y + 1, z)]
                 if (gfx) then 
-                    local sx = x*gTileWidth - camx + screen_w/2
-                    local sy = y*gTileHeight - camy + screen_h/2
+                    local sx = x*gTileWidth -- - camx + screen_w/2
+                    local sy = y*gTileHeight -- - camy + screen_h/2
                     love.graphics.draw(gfx,sx,sy) -- x, y, r, sx, sy, ox, oy
                 end
             end

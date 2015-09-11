@@ -1,8 +1,7 @@
 love.filesystem.load("external/LoveTiledMap/tiledmap.lua")()
-
 love.filesystem.load("tiledobjects.lua")()
 
-gCamX,gCamY = 800,1200
+gCamX,gCamY = 0, 0
 
 playerStart = { x = 200, y = 100 }
 
@@ -20,7 +19,7 @@ function love.load()
 
     for k, obj in ipairs(objects) do
         shape = love.physics.newRectangleShape(obj.width, obj.height);
-        body = love.physics.newBody(world, obj.x, obj.y, "static")
+        body = love.physics.newBody(world, obj.x+obj.width/2, obj.y+obj.height/2, "static")
         fixture = love.physics.newFixture(body, shape, 5)
     end
 
@@ -34,50 +33,59 @@ end
 
 function love.keyreleased(key)
     if key == 'w' then
-        moveVector.y = moveVector.y + 1.0;
+        moveVector.y = moveVector.y + 10.0;
     end
     if key == 'a' then
-        moveVector.x = moveVector.x + 1.0;
+        moveVector.x = moveVector.x + 10.0;
     end
     if key == 's' then
-        moveVector.y = moveVector.y - 1.0;
+        moveVector.y = moveVector.y - 10.0;
     end
     if key == 'd' then
-        moveVector.x = moveVector.x - 1.0;
+        moveVector.x = moveVector.x - 10.0;
     end
 end
 
 function love.keypressed(key) 
     if key == 'w' then
-        moveVector.y = moveVector.y - 1.0;
+        moveVector.y = moveVector.y - 10.0;
     end
     if key == 'a' then
-        moveVector.x = moveVector.x - 1.0;
+        moveVector.x = moveVector.x - 10.0;
     end
     if key == 's' then
-        moveVector.y = moveVector.y + 1.0;
+        moveVector.y = moveVector.y + 10.0;
     end
     if key == 'd' then
-        moveVector.x = moveVector.x + 1.0;
+        moveVector.x = moveVector.x + 10.0;
     end
 end
 
 function love.update(dt)
     world:update(dt)
 
+    gCamX = gCamX + moveVector.x
+    player.body:setX(player.body:getX() + moveVector.x)
+    gCamY = gCamY + moveVector.y
     --player.x = player.x + moveVector.x;
     --player.y = player.y + moveVector.y;
 end
 
 function love.draw(dt)
+    -- minimal camera
+    love.graphics.translate(-gCamX, -gCamY)
+
     love.graphics.setBackgroundColor(0x80,0x80,0x80)
 
     -- Draw environment
-    TiledMap_DrawNearCam(gCamX, gCamY)
+    TiledMap_DrawNearCam(gCamX + love.graphics:getWidth()/2, 
+                         gCamY + love.graphics:getHeight()/2)
 
     -- Draw player 
     local x, y = player.shape:getPoint();
     love.graphics.setColor(193, 47, 14) --set the drawing color to red for the ball
     love.graphics.circle("fill", player.body:getX(), player.body:getY(), player.shape:getRadius())
+    love.graphics.rectangle("fill", objects[1].x, objects[1].y, objects[1].width, objects[1].height)
     --love.graphics.draw(player.img, x, y, 0, player.rad / player.img:getWidth());
+
 end
