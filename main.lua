@@ -1,5 +1,5 @@
 love.filesystem.load("external/LoveTiledMap/tiledmap.lua")()
-player = love.filesystem.load("player.lua")()
+love.filesystem.load("player.lua")()
 love.filesystem.load("tiledobjects.lua")()
 
 local gCamX,gCamY = 0, 0
@@ -49,7 +49,7 @@ end
 function love.update(dt)
     world:update(dt)
 
-    player.update(dt)
+    player.update(dt, world)
 
     gCamX = player.getX() - love.graphics:getWidth()/2
     gCamY = player.getY() - love.graphics:getHeight()/2
