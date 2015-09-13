@@ -10524,6 +10524,5 @@
  </layer>
  <objectgroup name="Object Layer 1">
   <object id="1" x="280" y="1470" width="841" height="40"/>
-  <object id="2" x="618" y="1401" width="77" height="66"/>
  </objectgroup>
 </map>

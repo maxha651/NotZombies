@@ -1,14 +1,14 @@
 love.filesystem.load("external/LoveTiledMap/tiledmap.lua")()
+player = love.filesystem.load("player.lua")()
 love.filesystem.load("tiledobjects.lua")()
 
-gCamX,gCamY = 0, 0
+local gCamX,gCamY = 0, 0
 
-playerStart = { x = 200, y = 100 }
-
-player = { img = nil, body = nil, shape = nil, rad = 30 }
-moveVector = { x = 0.0, y = 0.0 }
+local debug_timer = 0
 
 function love.load()
+    -- Load modules
+
     -- Load environment graphics
     TiledMap_Load("map/map01.tmx")
 
@@ -23,55 +23,41 @@ function love.load()
         fixture = love.physics.newFixture(body, shape, 5)
     end
 
-    -- Player
-    player.img = love.graphics.newImage("gfx/characters/circle-ph.png");
-    player.shape = love.physics.newCircleShape(player.rad);
-    player.body = love.physics.newBody(world, playerStart.x, playerStart.y, "dynamic")
-    fixture = love.physics.newFixture(player.body, player.shape, 1)
-    fixture:setRestitution(0.9) --let the ball bounce
+    player.load()
+end
+
+function love.quit()
+end
+
+function love.focus(inFocus)
 end
 
 function love.keyreleased(key)
-    if key == 'w' then
-        moveVector.y = moveVector.y + 10.0;
-    end
-    if key == 'a' then
-        moveVector.x = moveVector.x + 10.0;
-    end
-    if key == 's' then
-        moveVector.y = moveVector.y - 10.0;
-    end
-    if key == 'd' then
-        moveVector.x = moveVector.x - 10.0;
-    end
+    player.keyreleased(key)
 end
 
 function love.keypressed(key) 
-    if key == 'w' then
-        moveVector.y = moveVector.y - 10.0;
-    end
-    if key == 'a' then
-        moveVector.x = moveVector.x - 10.0;
-    end
-    if key == 's' then
-        moveVector.y = moveVector.y + 10.0;
-    end
-    if key == 'd' then
-        moveVector.x = moveVector.x + 10.0;
-    end
+    player.keypressed(key)
+end
+
+function love.mousepressed(x, y, button)
+end
+
+function love.mousereleased(x, y, button)
 end
 
 function love.update(dt)
     world:update(dt)
 
-    gCamX = gCamX + moveVector.x
-    player.body:setX(player.body:getX() + moveVector.x)
-    gCamY = gCamY + moveVector.y
-    --player.x = player.x + moveVector.x;
-    --player.y = player.y + moveVector.y;
+    player.update(dt)
+
+    gCamX = player.getX() - love.graphics:getWidth()/2
+    gCamY = player.getY() - love.graphics:getHeight()/2
+
+    debug()
 end
 
-function love.draw(dt)
+function love.draw()
     -- minimal camera
     love.graphics.translate(-gCamX, -gCamY)
 
@@ -82,10 +68,18 @@ function love.draw(dt)
                          gCamY + love.graphics:getHeight()/2)
 
     -- Draw player 
-    local x, y = player.shape:getPoint();
-    love.graphics.setColor(193, 47, 14) --set the drawing color to red for the ball
-    love.graphics.circle("fill", player.body:getX(), player.body:getY(), player.shape:getRadius())
-    love.graphics.rectangle("fill", objects[1].x, objects[1].y, objects[1].width, objects[1].height)
-    --love.graphics.draw(player.img, x, y, 0, player.rad / player.img:getWidth());
+    player.draw()
+    -- Draw physics shapes
+    --love.graphics.rectangle("fill", objects[1].x, objects[1].y, objects[1].width, objects[1].height)
 
 end
+
+function debug()
+    time = love.timer.getTime()
+
+    if (time - debug_timer > 1) then
+        player.print()
+        debug_timer = time
+    end
+end
+
