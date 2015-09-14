@@ -29,7 +29,7 @@ function player.print()
     print()
 end
 
-function player.load()
+function player.load(world)
     img = love.graphics.newImage("gfx/characters/circle-ph.png");
 
     shape = love.physics.newCircleShape(radius);

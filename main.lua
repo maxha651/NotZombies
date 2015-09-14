@@ -23,7 +23,7 @@ function love.load()
         fixture = love.physics.newFixture(body, shape, 5)
     end
 
-    player.load()
+    player.load(world)
 end
 
 function love.quit()

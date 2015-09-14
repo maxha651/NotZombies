@@ -227,7 +227,13 @@
    <image width="70" height="70" source="../gfx/tiles/grassHillRight2.png"/>
   </tile>
   <tile id="75">
+   <properties>
+    <property name="BoxEnemy" value=""/>
+   </properties>
    <image width="70" height="70" source="../gfx/tiles/boxExplosive.png"/>
+   <objectgroup draworder="index">
+    <object id="0" x="0" y="0" width="70" height="70"/>
+   </objectgroup>
   </tile>
   <tile id="76">
    <image width="70" height="70" source="../gfx/tiles/dirtRight.png"/>
@@ -2530,7 +2536,7 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="0"/>
+   <tile gid="76"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>

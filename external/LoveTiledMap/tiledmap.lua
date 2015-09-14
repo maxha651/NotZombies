@@ -5,6 +5,9 @@
 -- NOTE : function GetMousePosOnMap () return gMouseX+gCamX-gScreenW/2,gMouseY+gCamY-gScreenH/2 end
 --
 -- 2015-09-06 Added option to not use spritesheets and load single images instead // M.H
+-- 2015-09-14 Heavily modified to suit my instantiation scheme // M.H
+
+love.filesystem.load("npcinit.lua")()
 
 kMapTileTypeEmpty = 0
 local floor = math.floor
@@ -25,10 +28,14 @@ function TiledMap_Load (filepath)
         local gid = first_gid
         for y=0,floor(h/gTileHeight)-1 do
             for x=0,floor(w/gTileWidth)-1 do
-                local sprite = love.image.newImageData(gTileWidth,gTileHeight)
-                sprite:paste(raw,0,0,x*gTileWidth,y*gTileHeight,gTileWidth,gTileHeight)
-                gTileGfx[gid] = love.graphics.newImage(sprite)
-                gid = gid + 1
+                if npcInit.templateExists(gid) then
+                    npcInit.instantiateSpecialTile(gid, x*gTileWidth, y*gTileHeight)
+                else
+                    local sprite = love.image.newImageData(gTileWidth,gTileHeight)
+                    sprite:paste(raw,0,0,x*gTileWidth,y*gTileHeight,gTileWidth,gTileHeight)
+                    gTileGfx[gid] = love.graphics.newImage(sprite)
+                    gid = gid + 1
+                end
             end
         end
     end
@@ -127,12 +134,28 @@ end
 
 local function getTiles(node)
     local tiles = {}
+    local k, l, m, sub, sub2, sub3
     for k, sub in ipairs(node) do
         if (sub.label == "tileset") then
             for l, sub2 in ipairs(sub) do
                 if (sub2.label == "tile") then
-                    -- Offset needed for some reason
-                    tiles[tonumber(sub2.xarg.id) + 1] = sub2[1].xarg.source
+                    local img, id
+                    local isSpecial = false
+                    for m, sub3 in ipairs(sub2) do
+                        if (sub3.label == "image") then
+                            img = sub2[1].xarg.source
+                            -- Offset needed for some reason
+                            id = tonumber(sub2.xarg.id + 1)
+                        end
+                        if (sub3.label == "properties") then
+                            isSpecial = true
+                        end
+                    end
+                    if isSpecial then
+                        npcInit.parseSpecialTile(sub2)
+                    else
+                        tiles[id] = img
+                    end
                 end
             end
         end
