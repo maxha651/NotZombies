@@ -1,7 +1,7 @@
 
 boxEnemy = {}
 
-boxEnemy.density = 1
+boxEnemy.density = 0.01
 boxEnemy.label = "boxEnemy"
 
 boxEnemy.world = nil
@@ -10,6 +10,9 @@ boxEnemy.body = nil
 boxEnemy.fixture = nil
 boxEnemy.img = nil
 boxEnemy.state = "idle"
+
+boxEnemy.width = 0
+boxEnemy.height = 0
 
 function boxEnemy:print()
     print(string.format("--- %s ---", self.label))
@@ -24,12 +27,15 @@ function boxEnemy:load(world, x, y, width, height, imgPath)
     end
 
     self.shape = love.physics.newRectangleShape(width, height)
-    self.body = love.physics.newBody(world, x, y)
+    self.body = love.physics.newBody(world, x, y, "dynamic")
     self.fixture = love.physics.newFixture(self.body, self.shape, 1)
 
     self.fixture:setRestitution(0) -- no bounce
     self.body:setMass(width*height*self.density)
     self.body:setUserData(self.label)
+
+    self.width = width
+    self.height = height
 end
 
 function boxEnemy:update()
@@ -38,10 +44,10 @@ end
 function boxEnemy:draw()
     if imgPath then
         love.graphics.draw(img, self.body:getX(), self.body:getY(), 0, 
-                           self.shape:getWidth() / img:getWidth())
+                           self.width / img:getWidth())
     else
-        love.graphics.rectangle("fill", self.body:getX(), self.body:getY(), 
-                                self.shape:getWidth, self.shape:getHeight)
+        love.graphics.rectangle("fill", self.body:getX()-self.width/2, self.body:getY()-self.height/2, 
+                                self.width, self.height)
     end
 end
 

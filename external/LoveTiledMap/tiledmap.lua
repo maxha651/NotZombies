@@ -28,22 +28,36 @@ function TiledMap_Load (filepath)
         local gid = first_gid
         for y=0,floor(h/gTileHeight)-1 do
             for x=0,floor(w/gTileWidth)-1 do
-                if npcInit.templateExists(gid) then
-                    npcInit.instantiateSpecialTile(gid, x*gTileWidth, y*gTileHeight)
-                else
-                    local sprite = love.image.newImageData(gTileWidth,gTileHeight)
-                    sprite:paste(raw,0,0,x*gTileWidth,y*gTileHeight,gTileWidth,gTileHeight)
-                    gTileGfx[gid] = love.graphics.newImage(sprite)
-                    gid = gid + 1
-                end
+                local sprite = love.image.newImageData(gTileWidth,gTileHeight)
+                sprite:paste(raw,0,0,x*gTileWidth,y*gTileHeight,gTileWidth,gTileHeight)
+                gTileGfx[gid] = love.graphics.newImage(sprite)
+                gid = gid + 1
             end
         end
     end
+
+    TiledMap_InstantiateSpecial()
 end
 
 function TiledMap_GetMapTile (tx,ty,layerid) -- coords in tiles
     local row = gMapLayers[layerid][ty]
     return row and row[tx] or kMapTileTypeEmpty
+end
+
+function TiledMap_InstantiateSpecial()
+    local minx,maxx = -1000, 1000
+    local miny,maxy = -1000, 1000
+    for z = 1,#gMapLayers do
+        for x = minx,maxx do
+            for y = miny,maxy do
+                local gid = TiledMap_GetMapTile(x + 1, y + 1, z)
+                if gid and npcInit.templateExists(gid) then
+                    print("found")
+                    npcInit.instantiateSpecialTile(gid, x*gTileWidth, y*gTileHeight)
+                end
+            end
+        end
+    end
 end
 
 function TiledMap_DrawNearCam (camx,camy)

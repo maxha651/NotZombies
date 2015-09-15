@@ -74,7 +74,9 @@ function player.update(dt, world)
 end
 
 function player.draw()
-    love.graphics.draw(img, player.getX(), player.getY(), 0, radius / img:getWidth());
+    local scale = 2*radius / img:getWidth()
+    love.graphics.draw(img, player.getX() - radius, 
+                       player.getY() - radius, 0, scale)
     --love.graphics.circle("fill", player.getX(), player.getY(), radius)
 end
 
