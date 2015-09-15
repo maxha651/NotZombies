@@ -1,10 +1,13 @@
 love.filesystem.load("external/LoveTiledMap/tiledmap.lua")()
 love.filesystem.load("player.lua")()
 love.filesystem.load("tiledobjects.lua")()
+love.filesystem.load("npcinit.lua")()
 
 local gCamX,gCamY = 0, 0
 
 local debug_timer = 0
+
+local npcList = nil
 
 function love.load()
     -- Load modules
@@ -22,6 +25,9 @@ function love.load()
         body = love.physics.newBody(world, obj.x+obj.width/2, obj.y+obj.height/2, "static")
         fixture = love.physics.newFixture(body, shape, 5)
     end
+
+    npcList = npcInit.addInstances(world)
+    print("number: ", #npcList)
 
     player.load(world)
 end
@@ -49,6 +55,10 @@ end
 function love.update(dt)
     world:update(dt)
 
+    for k, npc in ipairs(npcList) do
+        npc:update()
+    end
+
     player.update(dt, world)
 
     gCamX = player.getX() - love.graphics:getWidth()/2
@@ -67,6 +77,10 @@ function love.draw()
     TiledMap_DrawNearCam(gCamX + love.graphics:getWidth()/2, 
                          gCamY + love.graphics:getHeight()/2)
 
+    for k, npc in ipairs(npcList) do
+        npc:draw()
+    end
+
     -- Draw player 
     player.draw()
     -- Draw physics shapes
@@ -78,6 +92,9 @@ function debug()
     time = love.timer.getTime()
 
     if (time - debug_timer > 1) then
+        for k, npc in ipairs(npcList) do
+            npc:print()
+        end
         player.print()
         debug_timer = time
     end

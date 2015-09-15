@@ -17,14 +17,18 @@ local function parseBoxEnemy(tile)
             end
         end
         if sub1.label == "image" then
+            spritepath_removeold = "../"
+            spritepath_prefix = ""
             img = sub1.xarg.source
+            img = spritepath_prefix .. string.gsub(img,"^"..string.gsub(spritepath_removeold,"%.","%%."),"")
         end
     end
-    boxEnemy[tile.xarg.id + 1] = 
+    templates.boxEnemy[tile.xarg.id + 1] = 
     { gid = tile.xarg.id + 1, img = img, width = width, height = height }
 end
 
 local function instantiateBoxEnemy(gid, x, y)
+    print("instantiated", x, y)
     instances.boxEnemy[gid] = { x = x, y = y }
 end
 
@@ -39,7 +43,7 @@ function npcInit.parseSpecialTile(tile)
     for k, sub1 in ipairs(tile) do
         if (sub1.label == "properties") then
             for l, sub2 in ipairs(sub1) do
-                if (sub2.xarg.name == "boxEnemy") then
+                if (sub2.xarg.name == "BoxEnemy") then
                     parseBoxEnemy(tile)
                 end
             end
@@ -48,18 +52,25 @@ function npcInit.parseSpecialTile(tile)
 end
 
 function npcInit.templateExists(gid)
-    for k, template in pairs(templates) do
-        if template[gid] ~= nil then return true end
+    if templates.boxEnemy[gid] ~= nil then
+        print("true: ", gid)
+        return true 
     end
+    return false
 end
 
 function npcInit.addInstances(world)
-    for k, instance in ipairs(instances.boxEnemy) do
+    local boxEnemies = {}
+    for k, instance in pairs(instances.boxEnemy) do
+        print("adding")
         local boxEnemy = love.filesystem.load("boxenemy.lua")()
 
         boxEnemy:load(world, instance.x, instance.y, templates.boxEnemy[k].width, 
                       templates.boxEnemy[k].height, templates.boxEnemy[k].img)
+        boxEnemies[#boxEnemies+1] = boxEnemy
     end
+
+    return boxEnemies
 end
 
 return npcInit
