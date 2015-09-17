@@ -9,14 +9,12 @@ Graphics from Kenney (www.kenney.nl), kindly given to public domain (see
 gfx/tiles/license.txt).
 
 ### Tiled Map Loader ###
-Taken from https://github.com/cxong/LoveTiledMap
+Using https://github.com/karai17/Simple-Tiled-Implementation
+(previously used https://github.com/cxong/LoveTiledMap)
 
-See external/LoveTiledMap/.
+See Simple-Tiled-Implementation/
 
-Distributed under the MIT license.
-
-I've also extended this somewhat for my own
-evil purposes.
+Distributed under the MIT license (see Simple-Tiled-Implementation/LICENSE.md).
 
 ## License ##
 TBD (see LICENSE)
