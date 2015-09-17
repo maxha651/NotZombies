@@ -1,7 +1,9 @@
-love.filesystem.load("external/LoveTiledMap/tiledmap.lua")()
+sti = require "Simple-Tiled-Implementation"
 love.filesystem.load("player.lua")()
 love.filesystem.load("tiledobjects.lua")()
 love.filesystem.load("npcinit.lua")()
+
+prePath = love.filesystem.getWorkingDirectory
 
 local gCamX,gCamY = 0, 0
 
@@ -10,26 +12,19 @@ local debug_timer = 0
 local npcList = nil
 
 function love.load()
-    -- Load modules
 
-    -- Load environment graphics
-    TiledMap_Load("map/map01.tmx")
+    -- Load Tiled map
+    map = sti.new("map/map01.lua", { "box2d" })
 
-    -- Load physics world
+    -- Load physics
     love.physics.setMeter(64) --the height of a meter our worlds will be 64px
     world = love.physics.newWorld(0, 9.81*64, true)
-    objects = parseObjects("map/map01.tmx")
 
-    for k, obj in pairs(objects) do
-        shape = love.physics.newRectangleShape(obj.width, obj.height);
-        body = love.physics.newBody(world, obj.x+obj.width/2, obj.y+obj.height/2, "static")
-        fixture = love.physics.newFixture(body, shape, 5)
-    end
+    collision = map:box2d_init(world)
 
-    npcList = npcInit.addInstances(world)
-    print("number: ", #npcList)
+    --npcList = npcInit.addInstances(world)
 
-    player.load(world)
+    --player.load(world)
 end
 
 function love.quit()
@@ -53,38 +48,57 @@ function love.mousereleased(x, y, button)
 end
 
 function love.update(dt)
-    world:update(dt)
+    map:update(dt)
+    --world:update(dt)
 
-    for k, npc in ipairs(npcList) do
-        npc:update()
-    end
+    --for k, npc in ipairs(npcList) do
+    --    npc:update()
+    --end
 
-    player.update(dt, world)
+    --player.update(dt, world)
 
-    gCamX = player.getX() - love.graphics:getWidth()/2
-    gCamY = player.getY() - love.graphics:getHeight()/2
+    --gCamX = player.getX() - love.graphics:getWidth()/2
+    --gCamY = player.getY() - love.graphics:getHeight()/2
 
-    debug()
+    --debug()
 end
 
 function love.draw()
-    -- minimal camera
-    love.graphics.translate(-gCamX, -gCamY)
+    -- Translation would normally be based on a player's x/y
+    local translateX = 500
+    local translateY = 500
 
     love.graphics.setBackgroundColor(0x80,0x80,0x80)
 
-    -- Draw environment
-    TiledMap_DrawNearCam(gCamX + love.graphics:getWidth()/2, 
-                         gCamY + love.graphics:getHeight()/2)
+    -- Draw Range culls unnecessary tiles
+    map:setDrawRange(-translateX, -translateY, love.graphics:getWidth(), 
+                     love.graphics:getHeight())
 
-    for k, npc in pairs(npcList) do
-        npc:draw()
-    end
+    -- Draw the map and all objects within
+    map:draw()
 
-    -- Draw player 
-    player.draw()
-    -- Draw physics shapes
-    --love.graphics.rectangle("fill", objects[1].x, objects[1].y, objects[1].width, objects[1].height)
+    -- Draw Collision Map (useful for debugging)
+    love.graphics.setColor(255, 0, 0, 255)
+    map:box2d_draw(collision)
+
+    -- Reset color
+    love.graphics.setColor(255, 255, 255, 255)
+    ---- minimal camera
+    --love.graphics.translate(-gCamX, -gCamY)
+
+    --love.graphics.setBackgroundColor(0x80,0x80,0x80)
+
+    ---- Draw environment
+    --map:box2d_draw(collision)
+
+    --for k, npc in pairs(npcList) do
+    --    npc:draw()
+    --end
+
+    ---- Draw player 
+    --player.draw()
+    ---- Draw physics shapes
+    ----love.graphics.rectangle("fill", objects[1].x, objects[1].y, objects[1].width, objects[1].height)
 
 end
 
