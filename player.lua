@@ -19,7 +19,7 @@ local shape = nil
 local body = nil
 local img = nil
 
-local playerStart = { x = 200, y = 100 }
+local playerStart = { x = 400, y = 1400 }
 
 function player.print()
     print("--- Player info: ---")

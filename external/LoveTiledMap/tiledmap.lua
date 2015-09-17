@@ -6,6 +6,7 @@
 --
 -- 2015-09-06 Added option to not use spritesheets and load single images instead // M.H
 -- 2015-09-14 Heavily modified to suit my instantiation scheme // M.H
+-- TO BROKEN TO BE USED ELSEWHERE
 
 love.filesystem.load("npcinit.lua")()
 
@@ -52,7 +53,6 @@ function TiledMap_InstantiateSpecial()
             for y = miny,maxy do
                 local gid = TiledMap_GetMapTile(x + 1, y + 1, z)
                 if gid and npcInit.templateExists(gid) then
-                    print("found")
                     npcInit.instantiateSpecialTile(gid, x*gTileWidth, y*gTileHeight)
                 end
             end

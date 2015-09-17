@@ -28,8 +28,7 @@ local function parseBoxEnemy(tile)
 end
 
 local function instantiateBoxEnemy(gid, x, y)
-    print("instantiated", x, y)
-    instances.boxEnemy[gid] = { x = x, y = y }
+    instances.boxEnemy[#(instances.boxEnemy)+1] = { gid = gid, x = x, y = y }
 end
 
 function npcInit.instantiateSpecialTile(gid, x, y)
@@ -62,11 +61,12 @@ end
 function npcInit.addInstances(world)
     local boxEnemies = {}
     for k, instance in pairs(instances.boxEnemy) do
-        print("adding")
         local boxEnemy = love.filesystem.load("boxenemy.lua")()
 
-        boxEnemy:load(world, instance.x, instance.y, templates.boxEnemy[k].width, 
-                      templates.boxEnemy[k].height, templates.boxEnemy[k].img)
+        boxEnemy:load(world, instance.x, instance.y, 
+                      templates.boxEnemy[instance.gid].width, 
+                      templates.boxEnemy[instance.gid].height, 
+                      templates.boxEnemy[instance.gid].img)
         boxEnemies[#boxEnemies+1] = boxEnemy
     end
 

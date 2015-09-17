@@ -20,7 +20,7 @@ function love.load()
     world = love.physics.newWorld(0, 9.81*64, true)
     objects = parseObjects("map/map01.tmx")
 
-    for k, obj in ipairs(objects) do
+    for k, obj in pairs(objects) do
         shape = love.physics.newRectangleShape(obj.width, obj.height);
         body = love.physics.newBody(world, obj.x+obj.width/2, obj.y+obj.height/2, "static")
         fixture = love.physics.newFixture(body, shape, 5)
@@ -77,7 +77,7 @@ function love.draw()
     TiledMap_DrawNearCam(gCamX + love.graphics:getWidth()/2, 
                          gCamY + love.graphics:getHeight()/2)
 
-    for k, npc in ipairs(npcList) do
+    for k, npc in pairs(npcList) do
         npc:draw()
     end
 
@@ -92,7 +92,7 @@ function debug()
     time = love.timer.getTime()
 
     if (time - debug_timer > 1) then
-        for k, npc in ipairs(npcList) do
+        for k, npc in pairs(npcList) do
             npc:print()
         end
         player.print()
