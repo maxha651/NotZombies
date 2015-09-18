@@ -1,126 +1,134 @@
 
 player = {}
 
-local acceleration = { air = 20000, ground = 50000 }
-local maxSpeed = 10000
-local jumpForce = 100000
-local jumpPoolMax = 1
-local friction = { air = 0.1, ground = 500 }
-local floorSpeed = 0.005
-
-local state = "ground"
-local onGround = false
-local moveVector = { x = 0, y = 0 }
-local jumpPool = jumpPoolMax
-
 local playerStart = { x = 600, y = 300 }
 local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/circle-ph.png"
 
-local circle = nil
-local world = nil
+player.acceleration = { air = 20000, ground = 50000 }
+player.maxSpeed = 10000
+player.jumpForce = 100000
+player.jumpPoolMax = 1
+player.friction = { air = 0.1, ground = 500 }
+player.floorSpeed = 0.005
 
-function player.print()
+player.state = "ground"
+player.onGround = false
+player.moveVector = { x = 0, y = 0 }
+player.jumpPool = jumpPoolMax
+
+player.circle = nil
+player.world = nil
+
+function player:getGroundCallback()
+    local self = self
+    local function groundHitCallback(fixture, x, y, xn, yn, fraction)
+        self.onGround = true
+        other = fixture:getUserData()
+        if other and other.wasHitCallback then
+            other.wasHitCallback(other, fixture, x, y, xn, yn, self)
+        end
+        return 0
+    end
+    return groundHitCallback
+end
+
+function player:print()
     print("--- Player info: ---")
-    print("state:\t", state)
-    print("position: ", circle:getX(), circle:getY())
-    print("moveVector: ", moveVector.x, moveVector.y)
+    print("state:\t", self.state)
+    print("position: ", self.circle:getX(), self.circle:getY())
+    print("moveVector: ", self.moveVector.x, self.moveVector.y)
     print()
 end
 
-function player.load(world_p)
-    world = world_p
+function player:load(world)
+    self.world = world
 
-    circle = love.filesystem.load("circle.lua")()
-    circle:load(world, playerStart.x, playerStart.y, radius, mass, imgPath)
+    self.circle = love.filesystem.load("circle.lua")()
+    self.circle:load(world, playerStart.x, playerStart.y, radius, imgPath)
 
-    circle.fixture:setRestitution(0.1) -- bounce
-    circle.body:setSleepingAllowed(false)
-    circle.body:setMass(mass)
-    circle.body:setUserData("player")
+    self.circle.fixture:setRestitution(0.1) -- bounce
+    self.circle.body:setSleepingAllowed(false)
+    self.circle.body:setMass(mass)
+    self.circle.fixture:setUserData(self)
 end
 
-function groundHitCallback(fixture, x, y, xn, yn, fraction)
-    onGround = true
-    return 0
-end
+function player:update(dt)
+    self.state = self.onGround and "ground" or "air"
 
-function player.update(dt)
-    state = onGround and "ground" or "air"
+    self.circle.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
 
-    circle.body:applyForce(acceleration[state] * moveVector.x, 0)
-
-    velX, velY = circle.body:getLinearVelocity()
-    if false and velX > maxSpeed then
-        circle.body:setLinearVelocity(maxSpeed, velY)
-    elseif math.abs(velX) < floorSpeed then
+    velX, velY = self.circle.body:getLinearVelocity()
+    if false and velX > self.maxSpeed then
+        self.circle.body:setLinearVelocity(self.maxSpeed, velY)
+    elseif math.abs(velX) < self.floorSpeed then
         velX = 0
-        circle.body:setLinearVelocity(velX, velY)
-    elseif velX * moveVector.x <= 0 then -- Not moving or trying to stop
-        circle.body:applyForce(-velX*friction[state], 0)
+        self.circle.body:setLinearVelocity(velX, velY)
+    elseif velX * self.moveVector.x <= 0 then -- Not moving or trying to stop
+        self.circle.body:applyForce(-velX*self.friction[self.state], 0)
     end
 
-    if jump and jumpPool > 0 and (onGround or jumpPool ~= jumpPoolMax) then
-        circle.body:applyForce(0, -1 * jumpForce * jumpPool^10)
-        jumpPool = jumpPool - dt
+    if self.jump and self.jumpPool > 0 and (self.onGround or self.jumpPool ~= self.jumpPoolMax) then
+        self.circle.body:applyForce(0, -1 * self.jumpForce * self.jumpPool^10)
+        self.jumpPool = self.jumpPool - dt
     end
 
-    onGround = false
-    world:rayCast(circle:getX(), circle:getY(), 
-                  circle:getX(), circle:getY() + circle:getRadius() + 1, 
-                  groundHitCallback)
+    self.onGround = false
+    self.world:rayCast(self.circle:getX(), self.circle:getY(), 
+                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
+                  player:getGroundCallback())
 end
 
-function player.draw()
-    circle:draw()
+function player:draw()
+    self.circle:draw()
 end
 
-function player.keyreleased(key)
+function player:keyreleased(key)
     if key == 'w' then
-        moveVector.y = moveVector.y + 1.0;
+        self.moveVector.y = self.moveVector.y + 1.0;
     end
     if key == 'a' then
-        moveVector.x = moveVector.x + 1.0;
+        self.moveVector.x = self.moveVector.x + 1.0;
     end
     if key == 's' then
-        moveVector.y = moveVector.y - 1.0;
+        self.moveVector.y = self.moveVector.y - 1.0;
     end
     if key == 'd' then
-        moveVector.x = moveVector.x - 1.0;
+        self.moveVector.x = self.moveVector.x - 1.0;
     end
 
     if key == ' ' then
-        jump = false
+        self.jump = false
     end
 end
 
-function player.keypressed(key) 
+function player:keypressed(key) 
     if key == 'w' then
-        moveVector.y = moveVector.y - 1.0;
+        self.moveVector.y = self.moveVector.y - 1.0;
     end
     if key == 'a' then
-        moveVector.x = moveVector.x - 1.0;
+        self.moveVector.x = self.moveVector.x - 1.0;
     end
     if key == 's' then
-        moveVector.y = moveVector.y + 1.0;
+        self.moveVector.y = self.moveVector.y + 1.0;
     end
     if key == 'd' then
-        moveVector.x = moveVector.x + 1.0;
+        self.moveVector.x = self.moveVector.x + 1.0;
     end
 
     if key == ' ' then
-        jumpPool = jumpPoolMax
-        jump = true
+        self.jumpPool = self.jumpPoolMax
+        self.jump = true
     end
 end
 
-function player.getX()
-    return circle:getX()
+function player:getX()
+    return self.circle:getX()
 end
 
-function player.getY()
-    return circle:getY()
+function player:getY()
+    return self.circle:getY()
 end
 
 return player

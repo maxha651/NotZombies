@@ -1,9 +1,6 @@
 
 rect = {}
 
-rect.density = 0.01
-rect.label = "rect"
-
 rect.world = nil
 rect.shape = nil
 rect.body = nil
@@ -15,7 +12,7 @@ rect.width = 0
 rect.height = 0
 
 function rect:print()
-    print(string.format("--- %s ---", self.label))
+    print(string.format("--- %s ---", self.body:getUserData()))
     print("state:\t", state)
     print("position:", self.body:getX(), self.body:getY())
     print()
@@ -27,12 +24,8 @@ function rect:load(world, x, y, width, height, imgPath)
     end
 
     self.shape = love.physics.newRectangleShape(width, height)
-    self.body = love.physics.newBody(world, x, y, "kinematic")
+    self.body = love.physics.newBody(world, x, y, "dynamic")
     self.fixture = love.physics.newFixture(self.body, self.shape, 1)
-
-    self.fixture:setRestitution(0) -- no bounce
-    self.body:setMass(width*height*self.density)
-    self.body:setUserData(self.label)
 
     self.width = width
     self.height = height
@@ -52,6 +45,22 @@ function rect:draw()
                                 self.width, self.height)
         love.graphics.setColor(255, 255, 255, 255)
     end
+end
+
+function rect:getX()
+    return self.body:getX()
+end
+
+function rect:getY()
+    return self.body:getY()
+end
+
+function rect:getWidth()
+    return self.width
+end
+
+function rect:getHeight()
+    return self.height
 end
 
 return rect

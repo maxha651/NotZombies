@@ -1,5 +1,6 @@
 sti = require "Simple-Tiled-Implementation"
 love.filesystem.load("player.lua")()
+love.filesystem.load("evilbox.lua")()
 
 prePath = love.filesystem.getWorkingDirectory
 
@@ -28,7 +29,8 @@ function love.load()
     map:addCustomLayer("Player Layer", 3)
 
     -- Add data to Custom Layer
-    player.load(world)
+    player:load(world)
+    evilbox:load(world)
 
     local playerLayer = map.layers["Player Layer"]
     playerLayer.sprites = {
@@ -48,7 +50,7 @@ function love.load()
             local x = math.floor(sprite.x)
             local y = math.floor(sprite.y)
             local r = sprite.r
-            love.graphics.draw(sprite.image, x, y, r)
+            --love.graphics.draw(sprite.image, x, y, r)
         end
     end
 end
@@ -60,11 +62,11 @@ function love.focus(inFocus)
 end
 
 function love.keyreleased(key)
-    player.keyreleased(key)
+    player:keyreleased(key)
 end
 
 function love.keypressed(key) 
-    player.keypressed(key)
+    player:keypressed(key)
 end
 
 function love.mousepressed(x, y, button)
@@ -76,22 +78,15 @@ end
 function love.update(dt)
     map:update(dt)
     world:update(dt)
-    player.update(dt)
+    player:update(dt)
+    evilbox:update(dt)
 
-
-    --for k, npc in ipairs(npcList) do
-    --    npc:update()
-    --end
-
-    --gCamX = player.getX() - love.graphics:getWidth()/2
-    --gCamY = player.getY() - love.graphics:getHeight()/2
-
-    debug()
+    printDebug()
 end
 
 function love.draw()
-    local translateX = player.getX() - love.graphics:getWidth()/2
-    local translateY = player.getY() - love.graphics:getHeight()/2
+    local translateX = player:getX() - love.graphics:getWidth()/2
+    local translateY = player:getY() - love.graphics:getHeight()/2
 
     love.graphics.translate(-translateX, -translateY);
 
@@ -111,33 +106,18 @@ function love.draw()
     -- Reset color
     love.graphics.setColor(255, 255, 255, 255)
 
-    player.draw()
+    player:draw()
+    evilbox:draw()
 
-    ---- minimal camera
-    --love.graphics.translate(-gCamX, -gCamY)
-
-    --love.graphics.setBackgroundColor(0x80,0x80,0x80)
-
-    ---- Draw environment
-    --map:box2d_draw(collision)
-
-    --for k, npc in pairs(npcList) do
-    --    npc:draw()
-    --end
-
-    ---- Draw physics shapes
-    ----love.graphics.rectangle("fill", objects[1].x, objects[1].y, objects[1].width, objects[1].height)
-
+    love.graphics.print(love.timer.getFPS(), love.graphics:getWidth()+translateX-50, translateY+10)
 end
 
-function debug()
+function printDebug()
     time = love.timer.getTime()
 
     if (time - debug_timer > 1) then
-        --for k, npc in pairs(npcList) do
-        --    npc:print()
-        --end
-        player.print()
+        player:print()
+        evilbox:print()
         debug_timer = time
     end
 end

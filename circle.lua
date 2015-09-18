@@ -6,7 +6,7 @@ circle.body = nil
 circle.img = nil
 circle.world = nil
 
-function circle:load(world, x, y, rad, mass, imgPath)
+function circle:load(world, x, y, rad, imgPath)
     self.world = world
 
     if imgPath then
