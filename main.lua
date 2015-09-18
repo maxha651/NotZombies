@@ -14,17 +14,38 @@ local npcList = nil
 function love.load()
 
     -- Load Tiled map
-    map = sti.new("map/map01.lua", { "box2d" })
+    map = sti.new("map/map02.lua", { "box2d" })
 
     -- Load physics
-    love.physics.setMeter(64) --the height of a meter our worlds will be 64px
-    world = love.physics.newWorld(0, 9.81*64, true)
+    love.physics.setMeter(70)
+    world = love.physics.newWorld(0, 9.81*70, true)
 
     collision = map:box2d_init(world)
 
     --npcList = npcInit.addInstances(world)
 
-    --player.load(world)
+    -- Create a Custom Layer
+    map:addCustomLayer("Sprite Layer", 3)
+
+    -- Add data to Custom Layer
+    player.load(world)
+    local playerLayer = map.layers["Sprite Layer"]
+    playerLayer.sprites = {
+        player = {
+            image = love.graphics.newImage("gfx/characters/circle-ph.png"),
+            x = 70,
+            y = 70,
+            r = 0,
+        }
+    }
+
+    function playerLayer:update(dt)
+        player.update(dt)
+    end
+
+    function playerLayer:draw()
+        player.draw()
+    end
 end
 
 function love.quit()
@@ -49,24 +70,23 @@ end
 
 function love.update(dt)
     map:update(dt)
-    --world:update(dt)
+    world:update(dt)
 
     --for k, npc in ipairs(npcList) do
     --    npc:update()
     --end
 
-    --player.update(dt, world)
-
     --gCamX = player.getX() - love.graphics:getWidth()/2
     --gCamY = player.getY() - love.graphics:getHeight()/2
 
-    --debug()
+    debug()
 end
 
 function love.draw()
-    -- Translation would normally be based on a player's x/y
-    local translateX = 500
-    local translateY = 500
+    local translateX = player.getX() - love.graphics:getWidth()/2
+    local translateY = player.getY() - love.graphics:getHeight()/2
+
+    love.graphics.translate(-translateX, -translateY);
 
     love.graphics.setBackgroundColor(0x80,0x80,0x80)
 
@@ -95,8 +115,6 @@ function love.draw()
     --    npc:draw()
     --end
 
-    ---- Draw player 
-    --player.draw()
     ---- Draw physics shapes
     ----love.graphics.rectangle("fill", objects[1].x, objects[1].y, objects[1].width, objects[1].height)
 
@@ -106,9 +124,9 @@ function debug()
     time = love.timer.getTime()
 
     if (time - debug_timer > 1) then
-        for k, npc in pairs(npcList) do
-            npc:print()
-        end
+        --for k, npc in pairs(npcList) do
+        --    npc:print()
+        --end
         player.print()
         debug_timer = time
     end
