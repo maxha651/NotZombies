@@ -1,33 +1,33 @@
 
-boxEnemy = {}
+rect = {}
 
-boxEnemy.density = 0.01
-boxEnemy.label = "boxEnemy"
+rect.density = 0.01
+rect.label = "rect"
 
-boxEnemy.world = nil
-boxEnemy.shape = nil
-boxEnemy.body = nil
-boxEnemy.fixture = nil
-boxEnemy.img = nil
-boxEnemy.state = "idle"
+rect.world = nil
+rect.shape = nil
+rect.body = nil
+rect.fixture = nil
+rect.img = nil
+rect.state = "idle"
 
-boxEnemy.width = 0
-boxEnemy.height = 0
+rect.width = 0
+rect.height = 0
 
-function boxEnemy:print()
+function rect:print()
     print(string.format("--- %s ---", self.label))
     print("state:\t", state)
     print("position:", self.body:getX(), self.body:getY())
     print()
 end
 
-function boxEnemy:load(world, x, y, width, height, imgPath)
+function rect:load(world, x, y, width, height, imgPath)
     if imgPath then
         self.img = love.graphics.newImage(imgPath)
     end
 
     self.shape = love.physics.newRectangleShape(width, height)
-    self.body = love.physics.newBody(world, x, y, "dynamic")
+    self.body = love.physics.newBody(world, x, y, "kinematic")
     self.fixture = love.physics.newFixture(self.body, self.shape, 1)
 
     self.fixture:setRestitution(0) -- no bounce
@@ -38,17 +38,20 @@ function boxEnemy:load(world, x, y, width, height, imgPath)
     self.height = height
 end
 
-function boxEnemy:update()
+function rect:update()
 end
 
-function boxEnemy:draw()
-    if imgPath then
+function rect:draw()
+    if img ~= nil then
         love.graphics.draw(img, self.body:getX(), self.body:getY(), 0, 
                            self.width / img:getWidth())
-    else
-        love.graphics.rectangle("fill", self.body:getX()-self.width/2, self.body:getY()-self.height/2, 
+    end
+    if physicsDebug then
+        love.graphics.setColor(255, 0, 0, 255)
+        love.graphics.rectangle("line", self.body:getX()-self.width/2, self.body:getY()-self.height/2, 
                                 self.width, self.height)
+        love.graphics.setColor(255, 255, 255, 255)
     end
 end
 
-return boxEnemy
+return rect

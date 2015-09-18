@@ -1,15 +1,15 @@
 sti = require "Simple-Tiled-Implementation"
 love.filesystem.load("player.lua")()
-love.filesystem.load("tiledobjects.lua")()
-love.filesystem.load("npcinit.lua")()
 
 prePath = love.filesystem.getWorkingDirectory
 
-local gCamX,gCamY = 0, 0
+gCamX,gCamY = 0, 0
 
-local debug_timer = 0
+debug_timer = 0
 
-local npcList = nil
+npcList = nil
+
+physicsDebug = true
 
 function love.load()
 
@@ -25,17 +25,17 @@ function love.load()
     --npcList = npcInit.addInstances(world)
 
     -- Create a Custom Layer
-    map:addCustomLayer("Sprite Layer", 3)
+    map:addCustomLayer("Player Layer", 3)
 
     -- Add data to Custom Layer
     player.load(world)
 
-    local playerLayer = map.layers["Sprite Layer"]
+    local playerLayer = map.layers["Player Layer"]
     playerLayer.sprites = {
         player = {
             image = love.graphics.newImage("gfx/characters/circle-ph.png"),
-            x = 70,
-            y = 70,
+            x = 800,
+            y = 800,
             r = 0,
         }
     }
@@ -44,6 +44,12 @@ function love.load()
     end
 
     function playerLayer:draw()
+        for _, sprite in pairs(self.sprites) do
+            local x = math.floor(sprite.x)
+            local y = math.floor(sprite.y)
+            local r = sprite.r
+            love.graphics.draw(sprite.image, x, y, r)
+        end
     end
 end
 
