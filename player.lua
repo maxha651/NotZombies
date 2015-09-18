@@ -18,6 +18,7 @@ local jumpPool = jumpPoolMax
 local shape = nil
 local body = nil
 local img = nil
+local world = nil
 
 local playerStart = { x = 600, y = 300 }
 
@@ -29,7 +30,9 @@ function player.print()
     print()
 end
 
-function player.load(world)
+function player.load(w)
+    world = w
+
     img = love.graphics.newImage("gfx/characters/circle-ph.png");
 
     shape = love.physics.newCircleShape(radius);
@@ -47,7 +50,7 @@ function groundHitCallback(fixture, x, y, xn, yn, fraction)
     return 0
 end
 
-function player.update(dt, world)
+function player.update(dt)
     state = onGround and "ground" or "air"
 
     body:applyForce(acceleration[state] * moveVector.x, 0)

@@ -29,6 +29,7 @@ function love.load()
 
     -- Add data to Custom Layer
     player.load(world)
+
     local playerLayer = map.layers["Sprite Layer"]
     playerLayer.sprites = {
         player = {
@@ -40,11 +41,9 @@ function love.load()
     }
 
     function playerLayer:update(dt)
-        player.update(dt)
     end
 
     function playerLayer:draw()
-        player.draw()
     end
 end
 
@@ -71,6 +70,8 @@ end
 function love.update(dt)
     map:update(dt)
     world:update(dt)
+    player.update(dt)
+
 
     --for k, npc in ipairs(npcList) do
     --    npc:update()
@@ -91,7 +92,7 @@ function love.draw()
     love.graphics.setBackgroundColor(0x80,0x80,0x80)
 
     -- Draw Range culls unnecessary tiles
-    map:setDrawRange(-translateX, -translateY, love.graphics:getWidth(), 
+    map:setDrawRange(translateX, translateY, love.graphics:getWidth(), 
                      love.graphics:getHeight())
 
     -- Draw the map and all objects within
@@ -103,6 +104,9 @@ function love.draw()
 
     -- Reset color
     love.graphics.setColor(255, 255, 255, 255)
+
+    player.draw()
+
     ---- minimal camera
     --love.graphics.translate(-gCamX, -gCamY)
 
