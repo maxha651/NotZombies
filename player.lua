@@ -6,6 +6,8 @@ local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/circle-ph.png"
 
+player.label = "player"
+
 player.acceleration = { air = 20000, ground = 50000 }
 player.maxSpeed = 10000
 player.jumpForce = 100000
@@ -27,7 +29,7 @@ function player:getGroundCallback()
         self.onGround = true
         other = fixture:getUserData()
         if other and other.wasHitCallback then
-            other.wasHitCallback(other, fixture, x, y, xn, yn, self)
+            other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
         end
         return 0
     end
