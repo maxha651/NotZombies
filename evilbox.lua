@@ -6,25 +6,21 @@ local width, height = 70, 70
 local density = 0.01
 local imgPath = "gfx/characters/evilbox.png"
 
-evilbox.acceleration = { air = 20000, ground = 50000 } -- probably remove
-evilbox.maxSpeed = 10000 -- probably remove
-evilbox.speed = 100
-evilbox.friction = { air = 100, ground = 200 } -- probably remove
-evilbox.floorSpeed = 0.005 -- probremovevevv
+evilbox.acceleration = { air = 0, ground = 500 } -- TODO Use ?
+evilbox.maxSpeed = 100
 
-evilbox.state = "ground"
+evilbox.state = "air"
 evilbox.onGround = false
 evilbox.moveVector = { x = 0, y = 0 }
-evilbox.blocked = { left = 0, right = 0 }
+evilbox.blocked = { left = false, right = false }
+evilbox.dazedTimer = 0
 
 evilbox.rect = nil
 evilbox.world = nil
 evilbox.chasee = nil
 
--- TODO Probably remove manual friction
-
 function evilbox:wasHitCallback(fixture, x, y, xn, yn, fraction, other)
-    if other.label == "player" then
+    if other.label == "player" and love.timer.getTime() > self.dazedTimer then
         self.chasee = other
     end
 end
@@ -48,18 +44,25 @@ end
 function evilbox:getLeftRightCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
-        if fixture:getUserData().label then
-            -- TODO Do this properly. Seriously
-            return -1
+
+        local function setToDazed()
+            print("daze")
+            self.dazedTimer = love.timer.getTime() + 1 
+            self.chasee = nil
         end
-        -- This should probably be in update instead, but meh
-        local oldX, oldY = self.rect.body:getPosition()
-        if x < oldX then
-            self.blocked.left = self.blocked.left + 1
-            self.rect.body:setPosition(x + self.rect.width/2, oldY)
-        else
-            self.blocked.right = self.blocked.right + 1
-            self.rect.body:setPosition(x - self.rect.width/2, oldY)
+
+        -- Collision check only for "anonymous" stuff, e.g. walls
+        if not fixture:getUserData().label then
+
+            -- This should probably be in update instead, but meh
+            local oldX, oldY = self.rect.body:getPosition()
+            if x < oldX then
+                self.blocked.left = true
+                self.rect.body:setPosition(x + self.rect.width/2, oldY)
+            else
+                self.blocked.right = true
+                self.rect.body:setPosition(x - self.rect.width/2, oldY)
+            end
         end
         return 0
     end
@@ -82,6 +85,7 @@ function evilbox:load(world)
     self.rect:load(world, evilboxStart.x, evilboxStart.y, width, height, imgPath)
 
     self.rect.fixture:setRestitution(0.0) -- bounce
+    self.rect.body:setSleepingAllowed(false)
     self.rect.body:setMass(width*height*density)
     self.rect.body:setFixedRotation(true)
     self.rect.fixture:setUserData(self)
@@ -97,41 +101,27 @@ function evilbox:update(dt)
         self.rect.body:setType("dynamic")
     end
 
-    if self.rect.body:getType() == "dynamic" then
-        self.rect.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
-
-        velX, velY = self.rect.body:getLinearVelocity()
-        if false and velX > self.maxSpeed then
-            self.rect.body:setLinearVelocity(self.maxSpeed, velY)
-        elseif math.abs(velX) < self.floorSpeed then
-            velX = 0
-            self.rect.body:setLinearVelocity(velX, velY)
-        elseif velX * self.moveVector.x <= 0 then -- Not moving or trying to stop
-            self.rect.body:applyForce(-velX*self.friction[self.state], 0)
-        end
-    else
+    if self.rect.body:getType() == "kinematic" then
         if self.onGround and self.chasee then
             local othX = self.chasee:getX()
             local myX = self.rect.body:getX()
             if othX < myX then
-                if self.blocked.left == 0 then
-                    self.rect.body:setLinearVelocity(-self.speed, 0)
-                else
-                    self.blocked.left = self.blocked.left - 1
+                if not self.blocked.left then
+                    self.rect.body:setLinearVelocity(-self.maxSpeed, 0)
                 end
             elseif othX > myX then
-                if self.blocked.right then
-                    self.rect.body:setLinearVelocity(self.speed, 0)
-                else
-                    self.blocked.right = self.blocked.right - 1
+                if not self.blocked.right then
+                    self.rect.body:setLinearVelocity(self.maxSpeed, 0)
                 end
             end
         end
     end
+    -- If dynamic (in air) just let physics handle falling
 
     self.onGround = false
+    self.blocked = { left = false, right = false }
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 1, 
+                  self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 5, 
                   evilbox:getGroundCallback())
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
                   self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 

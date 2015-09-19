@@ -78,7 +78,7 @@ function player:update(dt)
 
     self.onGround = false
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
-                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
+                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 5, 
                   player:getGroundCallback())
 end
 
