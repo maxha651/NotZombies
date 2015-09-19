@@ -16,6 +16,12 @@ See Simple-Tiled-Implementation/
 
 Distributed under the MIT license (see Simple-Tiled-Implementation/LICENSE.md).
 
+### Lurker ###
+See https://github.com/rxi/lurker
+
+### Lume ###
+See https://github.com/rxi/lume
+
 ## License ##
 TBD (see LICENSE)
 
