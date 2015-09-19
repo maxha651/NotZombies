@@ -4,13 +4,25 @@ love.filesystem.load("evilbox.lua")()
 
 prePath = love.filesystem.getWorkingDirectory
 
-gCamX,gCamY = 0, 0
+physicsDebug = true
+oneMeter = 70
 
 debug_timer = 0
 
-npcList = nil
+customLayers = {}
+layerHandlers = { evilbox = love.filesystem.load("evilboxInit.lua")() }
+npcs = { evilbox = {} }
 
-physicsDebug = true
+local function loadCustomLayers(map, world)
+    for k, layer in ipairs(map.layers) do
+        local custom = map:getLayerProperties(k).custom
+        if custom then
+            assert(layerHandlers[custom], "Handler missing for layer: ", custom)
+            customLayers[custom] = k
+            npcs[custom] = layerHandlers[custom].initLayer(map, k, world)
+        end
+    end
+end
 
 function love.load()
 
@@ -18,10 +30,12 @@ function love.load()
     map = sti.new("map/map02.lua", { "box2d" })
 
     -- Load physics
-    love.physics.setMeter(70)
-    world = love.physics.newWorld(0, 9.81*70, true)
+    love.physics.setMeter(oneMeter)
+    world = love.physics.newWorld(0, 9.81*oneMeter, true)
 
     collision = map:box2d_init(world)
+    loadCustomLayers(map, world)
+    player:load(world)
 
     --npcList = npcInit.addInstances(world)
 
@@ -29,9 +43,6 @@ function love.load()
     map:addCustomLayer("Player Layer", 3)
 
     -- Add data to Custom Layer
-    player:load(world)
-    evilbox:load(world)
-
     local playerLayer = map.layers["Player Layer"]
     playerLayer.sprites = {
         player = {
@@ -76,12 +87,20 @@ function love.mousereleased(x, y, button)
 end
 
 function love.update(dt)
-    require("lurker/lurker").update()
+    --require("lurker/lurker").update()
+
+    world:update(dt)
+
+    for npcType, _ in pairs(npcs) do
+        for _, npc in ipairs(npcs[npcType]) do
+            npc:update(dt)
+        end
+        --map:setObjectCoordinates(map.layers[customLayers[npcType]])
+    end
+
+    player:update(dt)
 
     map:update(dt)
-    world:update(dt)
-    player:update(dt)
-    evilbox:update(dt)
 
     printDebug()
 end
@@ -104,12 +123,15 @@ function love.draw()
     -- Draw Collision Map (useful for debugging)
     love.graphics.setColor(255, 0, 0, 255)
     map:box2d_draw(collision)
-
-    -- Reset color
     love.graphics.setColor(255, 255, 255, 255)
 
+    for npcType, _ in pairs(npcs) do
+        for _, npc in ipairs(npcs[npcType]) do
+            npc:draw()
+        end
+    end
+
     player:draw()
-    evilbox:draw()
 
     love.graphics.print(love.timer.getFPS(), love.graphics:getWidth()+translateX-50, translateY+10)
 end
@@ -119,7 +141,13 @@ function printDebug()
 
     if (time - debug_timer > 1) then
         player:print()
-        evilbox:print()
+
+        for npcType, _ in pairs(npcs) do
+            for _, npc in ipairs(npcs[npcType]) do
+                npc:print(dt)
+            end
+        end
+
         debug_timer = time
     end
 end

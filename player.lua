@@ -28,6 +28,9 @@ function player:getGroundCallback()
     local function groundHitCallback(fixture, x, y, xn, yn, fraction)
         self.onGround = true
         other = fixture:getUserData()
+        if other == self then
+            return -1
+        end
         if other and other.wasHitCallback then
             other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
         end

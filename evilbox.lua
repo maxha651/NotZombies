@@ -1,8 +1,6 @@
 
 evilbox = {}
 
-local evilboxStart = { x = 800, y = 300 }
-local width, height = 70, 70
 local density = 0.01
 local imgPath = "gfx/characters/evilbox.png"
 
@@ -30,8 +28,8 @@ function evilbox:getGroundCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
         self.onGround = true
         other = fixture:getUserData()
-        if other and other.wasHitCallback then
-            other.wasHitCallback(other, fixture, x, y, xn, yn, self)
+        if other and other ~= self and other.wasHitCallback then
+            other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
         end
         -- This should probably be in update instead, but meh
         local oldX, oldY = self.rect.body:getPosition()
@@ -46,14 +44,12 @@ function evilbox:getLeftRightCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
 
         local function setToDazed()
-            print("daze")
             self.dazedTimer = love.timer.getTime() + 1 
             self.chasee = nil
         end
 
-        -- Collision check only for "anonymous" stuff, e.g. walls
-        if not fixture:getUserData().label then
-
+        -- Collision check (ignore player)
+        if fixture:getUserData().label ~= "player" then
             -- This should probably be in update instead, but meh
             local oldX, oldY = self.rect.body:getPosition()
             if x < oldX then
@@ -78,11 +74,11 @@ function evilbox:print()
     print()
 end
 
-function evilbox:load(world)
+function evilbox:load(world, x, y, width, height)
     self.world = world
 
     self.rect = love.filesystem.load("rect.lua")()
-    self.rect:load(world, evilboxStart.x, evilboxStart.y, width, height, imgPath)
+    self.rect:load(world, x, y, width, height, imgPath)
 
     self.rect.fixture:setRestitution(0.0) -- bounce
     self.rect.body:setSleepingAllowed(false)
@@ -124,13 +120,14 @@ function evilbox:update(dt)
                   self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 5, 
                   evilbox:getGroundCallback())
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
+                  self.rect:getX() + self.rect:getWidth()/2 + 1, self.rect:getY(), 
                   evilbox:getLeftRightCallback())
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
+                  self.rect:getX() - self.rect:getWidth()/2 - 1, self.rect:getY(), 
                   evilbox:getLeftRightCallback())
 end
 
+-- Mostly for debugging, handled by STI normally
 function evilbox:draw()
     self.rect:draw()
 end

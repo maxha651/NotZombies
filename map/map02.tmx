@@ -130,35 +130,14 @@
 </data>
  </layer>
  <objectgroup name="Evil Boxes">
-  <object id="9" type="evilbox" gid="21" x="1260" y="840" width="70" height="70">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </object>
-  <object id="10" type="evilbox" gid="21" x="1820" y="910" width="70" height="70">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </object>
-  <object id="11" type="evilbox" gid="21" x="1820" y="840" width="70" height="70">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </object>
-  <object id="12" type="evilbox" gid="21" x="1890" y="910" width="70" height="70">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </object>
-  <object id="14" type="evilbox" gid="21" x="2380" y="910" width="70" height="70">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </object>
-  <object id="15" type="evilbox" gid="21" x="2380" y="840" width="70" height="70">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </object>
+  <properties>
+   <property name="custom" value="evilbox"/>
+  </properties>
+  <object id="9" type="evilbox" gid="21" x="1260" y="840" width="70" height="70"/>
+  <object id="10" type="evilbox" gid="21" x="1820" y="910" width="70" height="70"/>
+  <object id="11" type="evilbox" gid="21" x="1820" y="840" width="70" height="70"/>
+  <object id="12" type="evilbox" gid="21" x="1890" y="910" width="70" height="70"/>
+  <object id="14" type="evilbox" gid="21" x="2380" y="910" width="70" height="70"/>
+  <object id="15" type="evilbox" gid="21" x="2380" y="840" width="70" height="70"/>
  </objectgroup>
 </map>

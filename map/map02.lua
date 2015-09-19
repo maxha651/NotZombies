@@ -227,7 +227,9 @@ return {
       name = "Evil Boxes",
       visible = true,
       opacity = 1,
-      properties = {},
+      properties = {
+        ["custom"] = "evilbox"
+      },
       objects = {
         {
           id = 9,
@@ -241,9 +243,7 @@ return {
           rotation = 0,
           gid = 21,
           visible = true,
-          properties = {
-            ["collidable"] = "true"
-          }
+          properties = {}
         },
         {
           id = 10,
@@ -257,9 +257,7 @@ return {
           rotation = 0,
           gid = 21,
           visible = true,
-          properties = {
-            ["collidable"] = "true"
-          }
+          properties = {}
         },
         {
           id = 11,
@@ -273,9 +271,7 @@ return {
           rotation = 0,
           gid = 21,
           visible = true,
-          properties = {
-            ["collidable"] = "true"
-          }
+          properties = {}
         },
         {
           id = 12,
@@ -289,9 +285,7 @@ return {
           rotation = 0,
           gid = 21,
           visible = true,
-          properties = {
-            ["collidable"] = "true"
-          }
+          properties = {}
         },
         {
           id = 14,
@@ -305,9 +299,7 @@ return {
           rotation = 0,
           gid = 21,
           visible = true,
-          properties = {
-            ["collidable"] = "true"
-          }
+          properties = {}
         },
         {
           id = 15,
@@ -321,9 +313,7 @@ return {
           rotation = 0,
           gid = 21,
           visible = true,
-          properties = {
-            ["collidable"] = "true"
-          }
+          properties = {}
         }
       }
     }
