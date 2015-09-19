@@ -1,7 +1,7 @@
 return {
   version = "1.1",
   luaversion = "5.1",
-  tiledversion = "2015-09-14",
+  tiledversion = "2015-09-18",
   orientation = "orthogonal",
   width = 100,
   height = 100,
@@ -236,7 +236,7 @@ return {
           name = "",
           type = "evilbox",
           shape = "rectangle",
-          x = 1260,
+          x = 1120,
           y = 840,
           width = 70,
           height = 70,

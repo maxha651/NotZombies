@@ -133,7 +133,7 @@
   <properties>
    <property name="custom" value="evilbox"/>
   </properties>
-  <object id="9" type="evilbox" gid="21" x="1260" y="840" width="70" height="70"/>
+  <object id="9" type="evilbox" gid="21" x="1120" y="840" width="70" height="70"/>
   <object id="10" type="evilbox" gid="21" x="1820" y="910" width="70" height="70"/>
   <object id="11" type="evilbox" gid="21" x="1820" y="840" width="70" height="70"/>
   <object id="12" type="evilbox" gid="21" x="1890" y="910" width="70" height="70"/>

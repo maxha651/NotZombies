@@ -121,18 +121,20 @@ function evilbox:update(dt)
     end
 
     if self.rect.body:getType() == "kinematic" 
-        and love.timer.getTime() > self.dazedTimer then
-        if self.onGround and self.chasee then
-            local othX = self.chasee:getX()
-            local myX = self.rect.body:getX()
-            if othX < myX then
-                if not self.blocked.left then
-                    self.rect.body:setLinearVelocity(-self.maxSpeed, 0)
-                end
-            elseif othX > myX then
-                if not self.blocked.right then
-                    self.rect.body:setLinearVelocity(self.maxSpeed, 0)
-                end
+        and love.timer.getTime() > self.dazedTimer 
+        and self.onGround 
+        and self.chasee then
+
+        local othX = self.chasee:getX()
+        local myX = self.rect.body:getX()
+
+        if othX < myX then
+            if not self.blocked.left then
+                self.rect.body:setLinearVelocity(-self.maxSpeed, 0)
+            end
+        elseif othX > myX then
+            if not self.blocked.right then
+                self.rect.body:setLinearVelocity(self.maxSpeed, 0)
             end
         end
     else
@@ -144,17 +146,17 @@ function evilbox:update(dt)
     self.blocked = { left = false, right = false }
     self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
                   self.rect:getX() - self.rect:getWidth()/2, 
-                  self.rect:getY() + self.rect:getHeight()/2 + 1, 
+                  self.rect:getY() + self.rect:getHeight()/2 + 3, 
                   self.groundCallback)
     self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
                   self.rect:getX() + self.rect:getWidth()/2, 
-                  self.rect:getY() + self.rect:getHeight()/2 + 1, 
+                  self.rect:getY() + self.rect:getHeight()/2 + 3, 
                   self.groundCallback)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX() + self.rect:getWidth()/2 + 1, self.rect:getY(), 
+                  self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
                   self.leftRightCallback)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX() - self.rect:getWidth()/2 - 1, self.rect:getY(), 
+                  self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
                   self.leftRightCallback)
 end
 
