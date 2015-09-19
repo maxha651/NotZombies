@@ -27,11 +27,12 @@ player.groundCallback = nil
 function player:getGroundCallback()
     local self = self
     local function groundHitCallback(fixture, x, y, xn, yn, fraction)
-        self.onGround = true
         other = fixture:getUserData()
         if other == self then
             return -1
         end
+
+        self.onGround = true
         -- Call "you were stomped" callback
         if other and other.wasHitCallback then
             other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
@@ -85,7 +86,7 @@ function player:update(dt)
 
     self.onGround = false
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
-                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 5, 
+                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
                   self.groundCallback)
 end
 

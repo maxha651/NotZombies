@@ -20,7 +20,7 @@ evilbox.groundCallback = nil
 evilbox.leftRightCallback = nil
 
 function evilbox:wasHitCallback(fixture, x, y, xn, yn, fraction, other)
-    if other.label == "player" and love.timer.getTime() > self.dazedTimer then
+    if other.label == "player" then
         self.chasee = other
     end
 end
@@ -28,11 +28,12 @@ end
 function evilbox:getGroundCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
-        self.onGround = true
         other = fixture:getUserData()
-        if other == self then
+        if other == self or other.label == "player" then
             return -1
         end
+
+        self.onGround = true
         -- Call "you were stomped" callback
         if other and other.wasHitCallback then
             other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
@@ -51,7 +52,6 @@ function evilbox:getLeftRightCallback()
 
         local function setToDazed()
             self.dazedTimer = love.timer.getTime() + 1 
-            self.chasee = nil
         end
 
         other = fixture:getUserData()
@@ -63,12 +63,21 @@ function evilbox:getLeftRightCallback()
         -- Some of this should probably be in update instead, but meh
         local oldX, oldY = self.rect.body:getPosition()
         if x < oldX then
+            if self.rect.body:getLinearVelocity() < -self.maxSpeed/2 then
+                setToDazed()
+                self.rect.body:setLinearVelocity(0, 0)
+            end
             self.blocked.left = true
             self.rect.body:setPosition(x + self.rect.width/2, oldY)
         else
+            if self.rect.body:getLinearVelocity() > self.maxSpeed/2 then
+                setToDazed()
+                self.rect.body:setLinearVelocity(0, 0)
+            end
             self.blocked.right = true
             self.rect.body:setPosition(x - self.rect.width/2, oldY)
         end
+
         return 0
     end
     return callback
@@ -85,10 +94,12 @@ end
 
 function evilbox:load(world, x, y, width, height)
     self.world = world
+    self.state = "air"
 
     self.rect = love.filesystem.load("rect.lua")()
     self.rect:load(world, x, y, width, height, imgPath)
 
+    self.rect.body:setType("dynamic")
     self.rect.fixture:setRestitution(0.0) -- bounce
     self.rect.body:setSleepingAllowed(false)
     self.rect.body:setMass(width*height*density)
@@ -109,7 +120,8 @@ function evilbox:update(dt)
         self.rect.body:setType("dynamic")
     end
 
-    if self.rect.body:getType() == "kinematic" then
+    if self.rect.body:getType() == "kinematic" 
+        and love.timer.getTime() > self.dazedTimer then
         if self.onGround and self.chasee then
             local othX = self.chasee:getX()
             local myX = self.rect.body:getX()
@@ -123,16 +135,20 @@ function evilbox:update(dt)
                 end
             end
         end
+    else
+        -- If we can't chase for some reason, stop chasing
+        self.chasee = nil
     end
-    -- If dynamic (in air) just let physics handle falling
 
     self.onGround = false
     self.blocked = { left = false, right = false }
     self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
-                  self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 1, 
+                  self.rect:getX() - self.rect:getWidth()/2, 
+                  self.rect:getY() + self.rect:getHeight()/2 + 1, 
                   self.groundCallback)
     self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
-                  self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 1, 
+                  self.rect:getX() + self.rect:getWidth()/2, 
+                  self.rect:getY() + self.rect:getHeight()/2 + 1, 
                   self.groundCallback)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
                   self.rect:getX() + self.rect:getWidth()/2 + 1, self.rect:getY(), 

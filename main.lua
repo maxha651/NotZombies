@@ -87,7 +87,7 @@ function love.mousereleased(x, y, button)
 end
 
 function love.update(dt)
-    --require("lurker/lurker").update()
+    require("lurker/lurker").update()
 
     world:update(dt)
 
