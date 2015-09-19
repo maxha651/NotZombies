@@ -22,6 +22,7 @@ player.jumpPool = jumpPoolMax
 
 player.circle = nil
 player.world = nil
+player.groundCallback = nil
 
 function player:getGroundCallback()
     local self = self
@@ -31,6 +32,7 @@ function player:getGroundCallback()
         if other == self then
             return -1
         end
+        -- Call "you were stomped" callback
         if other and other.wasHitCallback then
             other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
         end
@@ -57,6 +59,8 @@ function player:load(world)
     self.circle.body:setSleepingAllowed(false)
     self.circle.body:setMass(mass)
     self.circle.fixture:setUserData(self)
+
+    self.groundCallback = self:getGroundCallback()
 end
 
 function player:update(dt)
@@ -82,7 +86,7 @@ function player:update(dt)
     self.onGround = false
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
                   self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 5, 
-                  player:getGroundCallback())
+                  self.groundCallback)
 end
 
 function player:draw()

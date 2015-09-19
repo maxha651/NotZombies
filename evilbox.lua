@@ -16,6 +16,8 @@ evilbox.dazedTimer = 0
 evilbox.rect = nil
 evilbox.world = nil
 evilbox.chasee = nil
+evilbox.groundCallback = nil
+evilbox.leftRightCallback = nil
 
 function evilbox:wasHitCallback(fixture, x, y, xn, yn, fraction, other)
     if other.label == "player" and love.timer.getTime() > self.dazedTimer then
@@ -28,7 +30,11 @@ function evilbox:getGroundCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
         self.onGround = true
         other = fixture:getUserData()
-        if other and other ~= self and other.wasHitCallback then
+        if other == self then
+            return -1
+        end
+        -- Call "you were stomped" callback
+        if other and other.wasHitCallback then
             other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
         end
         -- This should probably be in update instead, but meh
@@ -48,17 +54,20 @@ function evilbox:getLeftRightCallback()
             self.chasee = nil
         end
 
-        -- Collision check (ignore player)
-        if fixture:getUserData().label ~= "player" then
-            -- This should probably be in update instead, but meh
-            local oldX, oldY = self.rect.body:getPosition()
-            if x < oldX then
-                self.blocked.left = true
-                self.rect.body:setPosition(x + self.rect.width/2, oldY)
-            else
-                self.blocked.right = true
-                self.rect.body:setPosition(x - self.rect.width/2, oldY)
-            end
+        other = fixture:getUserData()
+
+        if other == self or other.label == "player" then
+            return -1
+        end
+
+        -- Some of this should probably be in update instead, but meh
+        local oldX, oldY = self.rect.body:getPosition()
+        if x < oldX then
+            self.blocked.left = true
+            self.rect.body:setPosition(x + self.rect.width/2, oldY)
+        else
+            self.blocked.right = true
+            self.rect.body:setPosition(x - self.rect.width/2, oldY)
         end
         return 0
     end
@@ -85,6 +94,9 @@ function evilbox:load(world, x, y, width, height)
     self.rect.body:setMass(width*height*density)
     self.rect.body:setFixedRotation(true)
     self.rect.fixture:setUserData(self)
+
+    self.groundCallback = self:getGroundCallback()
+    self.leftRightCallback = self:getLeftRightCallback()
 end
 
 function evilbox:update(dt)
@@ -116,15 +128,18 @@ function evilbox:update(dt)
 
     self.onGround = false
     self.blocked = { left = false, right = false }
-    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 5, 
-                  evilbox:getGroundCallback())
+    self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
+                  self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 1, 
+                  self.groundCallback)
+    self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
+                  self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 + 1, 
+                  self.groundCallback)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
                   self.rect:getX() + self.rect:getWidth()/2 + 1, self.rect:getY(), 
-                  evilbox:getLeftRightCallback())
+                  self.leftRightCallback)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
                   self.rect:getX() - self.rect:getWidth()/2 - 1, self.rect:getY(), 
-                  evilbox:getLeftRightCallback())
+                  self.leftRightCallback)
 end
 
 -- Mostly for debugging, handled by STI normally
