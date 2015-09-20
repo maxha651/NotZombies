@@ -89,8 +89,6 @@ end
 function love.update(dt)
     require("lurker/lurker").update()
 
-    world:update(dt)
-
     for npcType, _ in pairs(npcs) do
         for _, npc in ipairs(npcs[npcType]) do
             npc:update(dt)
@@ -101,6 +99,7 @@ function love.update(dt)
     player:update(dt)
 
     map:update(dt)
+    world:update(dt)
 
     printDebug()
 end

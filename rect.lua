@@ -24,7 +24,7 @@ function rect:load(world, x, y, width, height, imgPath)
     end
 
     self.shape = love.physics.newRectangleShape(width, height)
-    self.body = love.physics.newBody(world, x, y, "dynamic")
+    self.body = love.physics.newBody(world, x, y, "static")
     self.fixture = love.physics.newFixture(self.body, self.shape, 1)
 
     self.width = width

@@ -24,7 +24,10 @@ function evilboxInit.initLayer(map, layer, world)
             object.y = coolObject:getY()
         end
 
-        coolObject:load(world, object.x, object.y, object.width, object.height)
+        -- Converting from bottom-left coordinate to center coordinate
+        coolObject:load(world, object.x + map.tilewidth/2, 
+                        object.y - map.tileheight/2, 
+                        object.width, object.height)
         coolObject.update = funkyUpdateFunc
 
         coolObjects[#coolObjects +1] = coolObject

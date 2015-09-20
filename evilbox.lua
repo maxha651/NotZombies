@@ -7,8 +7,8 @@ local imgPath = "gfx/characters/evilbox.png"
 evilbox.acceleration = { air = 0, ground = 500 } -- TODO Use ?
 evilbox.maxSpeed = 100
 
-evilbox.state = "air"
-evilbox.onGround = false
+evilbox.state = "ground"
+evilbox.onGround = true
 evilbox.moveVector = { x = 0, y = 0 }
 evilbox.blocked = { left = false, right = false }
 evilbox.dazedTimer = 0
@@ -94,16 +94,18 @@ end
 
 function evilbox:load(world, x, y, width, height)
     self.world = world
-    self.state = "air"
+    self.state = "ground"
+    self.onGround = true
 
     self.rect = love.filesystem.load("rect.lua")()
     self.rect:load(world, x, y, width, height, imgPath)
 
-    self.rect.body:setType("dynamic")
+    self.rect.body:setType("kinematic")
     self.rect.fixture:setRestitution(0.0) -- bounce
     self.rect.body:setSleepingAllowed(false)
     self.rect.body:setMass(width*height*density)
     self.rect.body:setFixedRotation(true)
+    self.rect.body:setLinearVelocity(0, 0)
     self.rect.fixture:setUserData(self)
 
     self.groundCallback = self:getGroundCallback()
@@ -111,6 +113,23 @@ function evilbox:load(world, x, y, width, height)
 end
 
 function evilbox:update(dt)
+    self.onGround = false
+    self.blocked = { left = false, right = false }
+    self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
+                       self.rect:getX() - self.rect:getWidth()/2, 
+                       self.rect:getY() + self.rect:getHeight()/2 + 10, 
+                       self.groundCallback)
+    self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
+                       self.rect:getX() + self.rect:getWidth()/2, 
+                       self.rect:getY() + self.rect:getHeight()/2 + 10, 
+                       self.groundCallback)
+    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+                       self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
+                       self.leftRightCallback)
+    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+                       self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
+                       self.leftRightCallback)
+
     self.state = self.onGround and "ground" or "air"
 
     if self.state == "ground" and self.rect.body:getType() == "dynamic" then
@@ -141,23 +160,6 @@ function evilbox:update(dt)
         -- If we can't chase for some reason, stop chasing
         self.chasee = nil
     end
-
-    self.onGround = false
-    self.blocked = { left = false, right = false }
-    self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
-                  self.rect:getX() - self.rect:getWidth()/2, 
-                  self.rect:getY() + self.rect:getHeight()/2 + 3, 
-                  self.groundCallback)
-    self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
-                  self.rect:getX() + self.rect:getWidth()/2, 
-                  self.rect:getY() + self.rect:getHeight()/2 + 3, 
-                  self.groundCallback)
-    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
-                  self.leftRightCallback)
-    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                  self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
-                  self.leftRightCallback)
 end
 
 -- Mostly for debugging, handled by STI normally

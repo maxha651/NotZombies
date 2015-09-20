@@ -1,7 +1,7 @@
 
 player = {}
 
-local playerStart = { x = 600, y = 300 }
+local playerStart = { x = 2200, y = 850 }
 local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/circle-ph.png"
@@ -65,6 +65,11 @@ function player:load(world)
 end
 
 function player:update(dt)
+    self.onGround = false
+    self.world:rayCast(self.circle:getX(), self.circle:getY(), 
+                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
+                  self.groundCallback)
+
     self.state = self.onGround and "ground" or "air"
 
     self.circle.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
@@ -83,11 +88,6 @@ function player:update(dt)
         self.circle.body:applyForce(0, -1 * self.jumpForce * self.jumpPool^10)
         self.jumpPool = self.jumpPool - dt
     end
-
-    self.onGround = false
-    self.world:rayCast(self.circle:getX(), self.circle:getY(), 
-                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
-                  self.groundCallback)
 end
 
 function player:draw()
