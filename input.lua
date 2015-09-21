@@ -35,7 +35,6 @@ function input.load()
 end
 
 function input.getJump()
-  print(jump:isDown())
   return jump:isDown()
 end
 
