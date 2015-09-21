@@ -1,10 +1,13 @@
 
 evilbox = {}
 
-local density = 0.01
 local imgPath = "gfx/characters/evilbox.png"
 
-evilbox.acceleration = { air = 0, ground = 500 } -- TODO Use ?
+local density = 0.01
+local dazedTime = 1
+local angryTime = 1
+local groundRaycastPadding = 3
+
 evilbox.maxSpeed = 100
 
 evilbox.state = "ground"
@@ -51,7 +54,7 @@ function evilbox:getLeftRightCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
 
         local function setToDazed()
-            self.dazedTimer = love.timer.getTime() + 1 
+            self.dazedTimer = love.timer.getTime() + dazedTime 
         end
 
         other = fixture:getUserData()
@@ -94,7 +97,7 @@ end
 
 function evilbox:load(world, x, y, width, height)
     self.world = world
-    self.state = "ground"
+    self.state = "idle"
     self.onGround = true
 
     self.rect = love.filesystem.load("rect.lua")()
@@ -117,11 +120,11 @@ function evilbox:update(dt)
     self.blocked = { left = false, right = false }
     self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
                        self.rect:getX() - self.rect:getWidth()/2, 
-                       self.rect:getY() + self.rect:getHeight()/2 + 10, 
+                       self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
                        self.groundCallback)
     self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
                        self.rect:getX() + self.rect:getWidth()/2, 
-                       self.rect:getY() + self.rect:getHeight()/2 + 10, 
+                       self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
                        self.groundCallback)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
                        self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
@@ -132,32 +135,38 @@ function evilbox:update(dt)
 
     self.state = self.onGround and "ground" or "air"
 
-    if self.state == "ground" and self.rect.body:getType() == "dynamic" then
+    if self.onGround and self.rect.body:getType() ~= "kinematic" then
         self.rect.body:setType("kinematic")
         self.rect.body:setLinearVelocity(0,0)
-    elseif self.state ~= "ground" and self.rect.body:getType() == "kinematic" then
+    elseif not self.onGround and self.rect.body:getType() ~= "dynamic" then
         self.rect.body:setType("dynamic")
     end
 
-    if self.rect.body:getType() == "kinematic" 
-        and love.timer.getTime() > self.dazedTimer 
-        and self.onGround 
-        and self.chasee then
+    -- First check if incapacitated
+    if love.timer.getTime() < self.dazedTimer then 
+        self.state = "dazed"
+        -- Forget about chasing
+        self.chasee = nil
+    -- Then check if we want to chase someone/something
+    elseif self.onGround and self.chasee then
 
         local othX = self.chasee:getX()
         local myX = self.rect.body:getX()
 
-        if othX < myX then
-            if not self.blocked.left then
-                self.rect.body:setLinearVelocity(-self.maxSpeed, 0)
-            end
-        elseif othX > myX then
-            if not self.blocked.right then
-                self.rect.body:setLinearVelocity(self.maxSpeed, 0)
-            end
+        if othX < myX - rect:getWidth()/2 and not self.blocked.left then
+            self.state = "chasing"
+            self.rect.body:setLinearVelocity(-self.maxSpeed, 0)
+        elseif othX > myX + rect:getWidth()/2 and not self.blocked.right then
+            self.state = "chasing"
+            self.rect.body:setLinearVelocity(self.maxSpeed, 0)
+        else
+            self.rect.body:setLinearVelocity(0, 0)
+            self.state = "angry"
         end
+    -- Otherwise, idle
     else
         -- If we can't chase for some reason, stop chasing
+        self.state = "idle"
         self.chasee = nil
     end
 end
