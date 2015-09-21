@@ -1,4 +1,6 @@
 
+love.filesystem.load("input.lua")()
+
 player = {}
 
 local playerStart = { x = 2200, y = 850 }
@@ -65,6 +67,13 @@ function player:load(world)
 end
 
 function player:update(dt)
+    if input.getJump() ~= self.jump then
+        self.jumpPool = self.jumpPoolMax
+        self.jump = input.getJump()
+    end
+    self.moveVector.x = input.getXAxis()
+    self.moveVector.y = input.getYAxis()
+
     self.onGround = false
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
                   self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
@@ -92,45 +101,6 @@ end
 
 function player:draw()
     self.circle:draw()
-end
-
-function player:keyreleased(key)
-    if key == 'w' then
-        self.moveVector.y = self.moveVector.y + 1.0;
-    end
-    if key == 'a' then
-        self.moveVector.x = self.moveVector.x + 1.0;
-    end
-    if key == 's' then
-        self.moveVector.y = self.moveVector.y - 1.0;
-    end
-    if key == 'd' then
-        self.moveVector.x = self.moveVector.x - 1.0;
-    end
-
-    if key == ' ' then
-        self.jump = false
-    end
-end
-
-function player:keypressed(key) 
-    if key == 'w' then
-        self.moveVector.y = self.moveVector.y - 1.0;
-    end
-    if key == 'a' then
-        self.moveVector.x = self.moveVector.x - 1.0;
-    end
-    if key == 's' then
-        self.moveVector.y = self.moveVector.y + 1.0;
-    end
-    if key == 'd' then
-        self.moveVector.x = self.moveVector.x + 1.0;
-    end
-
-    if key == ' ' then
-        self.jumpPool = self.jumpPoolMax
-        self.jump = true
-    end
 end
 
 function player:getX()

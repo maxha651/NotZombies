@@ -1,3 +1,6 @@
 [submodule "Simple-Tiled-Implementation"]
 	path = Simple-Tiled-Implementation
 	url = git@github.com:maxha651/Simple-Tiled-Implementation.git
+[submodule "tactile"]
+	path = tactile
+	url = https://github.com/tesselode/tactile.git

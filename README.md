@@ -22,6 +22,9 @@ See https://github.com/rxi/lurker
 ### Lume ###
 See https://github.com/rxi/lume
 
+### tactile ###
+See https://github.com/tesselode/tactile.git
+
 ## License ##
 TBD (see LICENSE)
 

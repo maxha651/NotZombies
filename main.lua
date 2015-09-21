@@ -1,5 +1,7 @@
 sti = require "Simple-Tiled-Implementation"
+
 love.filesystem.load("player.lua")()
+love.filesystem.load("input.lua")()
 love.filesystem.load("evilbox.lua")()
 
 prePath = love.filesystem.getWorkingDirectory
@@ -25,6 +27,7 @@ local function loadCustomLayers(map, world)
 end
 
 function love.load()
+    input.load()
 
     -- Load Tiled map
     map = sti.new("map/map02.lua", { "box2d" })
@@ -36,54 +39,12 @@ function love.load()
     collision = map:box2d_init(world)
     loadCustomLayers(map, world)
     player:load(world)
-
-    --npcList = npcInit.addInstances(world)
-
-    -- Create a Custom Layer
-    map:addCustomLayer("Player Layer", 3)
-
-    -- Add data to Custom Layer
-    local playerLayer = map.layers["Player Layer"]
-    playerLayer.sprites = {
-        player = {
-            image = love.graphics.newImage("gfx/characters/circle-ph.png"),
-            x = 800,
-            y = 800,
-            r = 0,
-        }
-    }
-
-    function playerLayer:update(dt)
-    end
-
-    function playerLayer:draw()
-        for _, sprite in pairs(self.sprites) do
-            local x = math.floor(sprite.x)
-            local y = math.floor(sprite.y)
-            local r = sprite.r
-            --love.graphics.draw(sprite.image, x, y, r)
-        end
-    end
 end
 
 function love.quit()
 end
 
 function love.focus(inFocus)
-end
-
-function love.keyreleased(key)
-    player:keyreleased(key)
-end
-
-function love.keypressed(key) 
-    player:keypressed(key)
-end
-
-function love.mousepressed(x, y, button)
-end
-
-function love.mousereleased(x, y, button)
 end
 
 function love.update(dt)
