@@ -16,6 +16,7 @@ player.jumpForce = 100000
 player.jumpPoolMax = 1
 player.friction = { air = 0.1, ground = 500 }
 player.floorSpeed = 0.005
+player.start = { x = playerStart.x, y = playerStart.y }
 
 player.state = "ground"
 player.onGround = false
@@ -64,6 +65,11 @@ function player:load(world)
     self.circle.fixture:setUserData(self)
 
     self.groundCallback = self:getGroundCallback()
+end
+
+function player:reload()
+    moveVector = { x = 0, y = 0}
+    self.circle.body:setPosition(self.start.x, self.start.y)
 end
 
 function player:update(dt)

@@ -12,8 +12,13 @@ oneMeter = 70
 debug_timer = 0
 
 customLayers = {}
-layerHandlers = { evilbox = love.filesystem.load("evilboxInit.lua")() }
-npcs = { evilbox = {} }
+layerHandlers = { 
+    evilbox = love.filesystem.load("evilboxInit.lua")(),
+    checkpoint = love.filesystem.load("checkpointInit.lua")() 
+}
+
+-- TODO rename ?
+npcs = { evilbox = {}, checkpoint = {}}
 
 local function loadCustomLayers(map, world)
     for k, layer in ipairs(map.layers) do

@@ -17,6 +17,7 @@ evilbox.moveVector = { x = 0, y = 0 }
 evilbox.blocked = { left = false, right = false }
 evilbox.dazedTimer = 0
 evilbox.angryTimer = 0
+evilbox.start = { x = 0, y = 0 }
 
 evilbox.rect = nil
 evilbox.world = nil
@@ -102,6 +103,7 @@ function evilbox:load(world, x, y, width, height)
     self.world = world
     self.state = "idle"
     self.onGround = true
+    self.start.x, self.start.y = x, y
 
     self.rect = love.filesystem.load("rect.lua")()
     self.rect:load(world, x, y, width, height, imgPath)
@@ -116,6 +118,14 @@ function evilbox:load(world, x, y, width, height)
 
     self.groundCallback = self:getGroundCallback()
     self.leftRightCallback = self:getLeftRightCallback()
+end
+
+function evilbox:reload()
+    self.state = "idle"
+    self.onGround = true
+    self.rect.body:setType("kinematic")
+    self.rect.body:setLinearVelocity(0,0)
+    self.rect.body:setPosition(self.start.x, self.start.y)
 end
 
 function evilbox:update(dt)

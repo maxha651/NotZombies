@@ -1,13 +1,13 @@
 return {
   version = "1.1",
   luaversion = "5.1",
-  tiledversion = "2015-09-18",
+  tiledversion = "2015-09-20",
   orientation = "orthogonal",
   width = 100,
   height = 100,
   tilewidth = 70,
   tileheight = 70,
-  nextobjectid = 16,
+  nextobjectid = 20,
   properties = {},
   tilesets = {
     {
@@ -312,6 +312,45 @@ return {
           height = 70,
           rotation = 0,
           gid = 21,
+          visible = true,
+          properties = {}
+        }
+      }
+    },
+    {
+      type = "objectgroup",
+      name = "Checkpoints",
+      visible = true,
+      opacity = 1,
+      properties = {
+        ["custom"] = "checkpoint"
+      },
+      objects = {
+        {
+          id = 18,
+          name = "",
+          type = "",
+          shape = "rectangle",
+          x = 1680,
+          y = 700,
+          width = 70,
+          height = 70,
+          rotation = 0,
+          gid = 9,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 19,
+          name = "",
+          type = "",
+          shape = "rectangle",
+          x = 2520,
+          y = 630,
+          width = 70,
+          height = 70,
+          rotation = 0,
+          gid = 9,
           visible = true,
           properties = {}
         }

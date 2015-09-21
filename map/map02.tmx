@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="70" tileheight="70" nextobjectid="16">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="70" tileheight="70" nextobjectid="20">
  <tileset firstgid="1" name="blackwhite" tilewidth="70" tileheight="70" margin="2" tilecount="9">
   <image source="../gfx/basic/blackwhite.png" width="256" height="256"/>
   <tile id="0">
@@ -139,5 +139,12 @@
   <object id="12" type="evilbox" gid="21" x="1890" y="910" width="70" height="70"/>
   <object id="14" type="evilbox" gid="21" x="2380" y="910" width="70" height="70"/>
   <object id="15" type="evilbox" gid="21" x="2380" y="840" width="70" height="70"/>
+ </objectgroup>
+ <objectgroup name="Checkpoints">
+  <properties>
+   <property name="custom" value="checkpoint"/>
+  </properties>
+  <object id="18" gid="9" x="1680" y="700" width="70" height="70"/>
+  <object id="19" gid="9" x="2520" y="630" width="70" height="70"/>
  </objectgroup>
 </map>
