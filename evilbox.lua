@@ -3,18 +3,20 @@ evilbox = {}
 
 local imgPath = "gfx/characters/evilbox.png"
 
+local maxSpeed = 100
 local density = 0.01
 local dazedTime = 1
 local angryTime = 1
 local groundRaycastPadding = 3
+local chasePadding = 0.1 -- % of width
 
-evilbox.maxSpeed = 100
-
+evilbox.label = "evilbox"
 evilbox.state = "ground"
 evilbox.onGround = true
 evilbox.moveVector = { x = 0, y = 0 }
 evilbox.blocked = { left = false, right = false }
 evilbox.dazedTimer = 0
+evilbox.angryTimer = 0
 
 evilbox.rect = nil
 evilbox.world = nil
@@ -25,6 +27,7 @@ evilbox.leftRightCallback = nil
 function evilbox:wasHitCallback(fixture, x, y, xn, yn, fraction, other)
     if other.label == "player" then
         self.chasee = other
+        self.angryTimer = love.timer.getTime() + angryTime
     end
 end
 
@@ -66,14 +69,14 @@ function evilbox:getLeftRightCallback()
         -- Some of this should probably be in update instead, but meh
         local oldX, oldY = self.rect.body:getPosition()
         if x < oldX then
-            if self.rect.body:getLinearVelocity() < -self.maxSpeed/2 then
+            if self.rect.body:getLinearVelocity() < -maxSpeed/2 then
                 setToDazed()
                 self.rect.body:setLinearVelocity(0, 0)
             end
             self.blocked.left = true
             self.rect.body:setPosition(x + self.rect.width/2, oldY)
         else
-            if self.rect.body:getLinearVelocity() > self.maxSpeed/2 then
+            if self.rect.body:getLinearVelocity() > maxSpeed/2 then
                 setToDazed()
                 self.rect.body:setLinearVelocity(0, 0)
             end
@@ -138,6 +141,7 @@ function evilbox:update(dt)
     if self.onGround and self.rect.body:getType() ~= "kinematic" then
         self.rect.body:setType("kinematic")
         self.rect.body:setLinearVelocity(0,0)
+
     elseif not self.onGround and self.rect.body:getType() ~= "dynamic" then
         self.rect.body:setType("dynamic")
     end
@@ -147,21 +151,33 @@ function evilbox:update(dt)
         self.state = "dazed"
         -- Forget about chasing
         self.chasee = nil
+        self.rect.body:setLinearVelocity(0,0) -- not really needed
+
+    -- Or initally angry which should be very similar (make same?)
+    elseif love.timer.getTime() < self.angryTimer then
+        self.state = "angry"
+        self.rect.body:setLinearVelocity(0,0)
+
     -- Then check if we want to chase someone/something
     elseif self.onGround and self.chasee then
 
         local othX = self.chasee:getX()
         local myX = self.rect.body:getX()
 
-        if othX < myX - rect:getWidth()/2 and not self.blocked.left then
+        if othX < myX - rect:getWidth() * chasePadding 
+            and not self.blocked.left then
             self.state = "chasing"
-            self.rect.body:setLinearVelocity(-self.maxSpeed, 0)
-        elseif othX > myX + rect:getWidth()/2 and not self.blocked.right then
+            self.rect.body:setLinearVelocity(-maxSpeed, 0)
+
+        elseif othX > myX + rect:getWidth() * chasePadding 
+            and not self.blocked.right then
             self.state = "chasing"
-            self.rect.body:setLinearVelocity(self.maxSpeed, 0)
-        else
+            self.rect.body:setLinearVelocity(maxSpeed, 0)
+
+        elseif self.state ~= "angry" then
             self.rect.body:setLinearVelocity(0, 0)
             self.state = "angry"
+
         end
     -- Otherwise, idle
     else
