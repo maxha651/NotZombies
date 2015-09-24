@@ -4,7 +4,7 @@ evilbox = {}
 local imgPath = "gfx/characters/evilbox.png"
 
 local maxSpeed = 100
-local density = 0.01
+local density = 0.1
 local dazedTime = 1
 local angryTime = 1
 local groundRaycastPadding = 3
@@ -36,15 +36,16 @@ function evilbox:getGroundCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
+        -- Call "you were stomped" callback
+        if other and other.wasHitCallback then
+            other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
+        end
+
         if other == self or other.label == "player" then
             return -1
         end
 
         self.onGround = true
-        -- Call "you were stomped" callback
-        if other and other.wasHitCallback then
-            other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
-        end
         -- This should probably be in update instead, but meh
         local oldX, oldY = self.rect.body:getPosition()
         self.rect.body:setPosition(oldX, y - self.rect.height/2)
@@ -123,6 +124,7 @@ end
 function evilbox:reload()
     self.state = "idle"
     self.onGround = true
+    self.chasee = nil
     self.rect.body:setType("kinematic")
     self.rect.body:setLinearVelocity(0,0)
     self.rect.body:setPosition(self.start.x, self.start.y)

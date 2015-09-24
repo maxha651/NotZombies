@@ -31,7 +31,21 @@ local function loadCustomLayers(map, world)
     end
 end
 
+local function reload()
+    for npcType, _ in pairs(npcs) do
+        for _, npc in ipairs(npcs[npcType]) do
+            npc:reload(dt)
+        end
+        --map:setObjectCoordinates(map.layers[customLayers[npcType]])
+    end
+
+    player:reload(dt)
+end
+
+
 function love.load()
+    love.handlers.reload = reload
+
     input.load()
 
     -- Load Tiled map
@@ -67,7 +81,7 @@ function love.update(dt)
     map:update(dt)
     world:update(dt)
 
-    printDebug()
+    --printDebug()
 end
 
 function love.draw()

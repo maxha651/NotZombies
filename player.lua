@@ -22,10 +22,22 @@ player.state = "ground"
 player.onGround = false
 player.moveVector = { x = 0, y = 0 }
 player.jumpPool = jumpPoolMax
+player.blocked = { left = false, right = false }
 
 player.circle = nil
 player.world = nil
+player.checkpoint = nil
 player.groundCallback = nil
+player.leftRightCallback = nil
+player.topCallback = nil
+
+--function player:wasHitCallback(fixture, x, y, xn, yn, fraction, other)
+--    print("PLAYER HIT")
+--    if other.label == "evilbox" then
+--        print("DEATHSTOMP")
+--        self:dead()
+--    end
+--end
 
 function player:getGroundCallback()
     local self = self
@@ -45,12 +57,56 @@ function player:getGroundCallback()
     return groundHitCallback
 end
 
+function player:getLeftRightCallback()
+    local self = self
+    local function callback(fixture, x, y, xn, yn, fraction)
+
+        other = fixture:getUserData()
+        if other == self then
+            return -1
+        elseif other.label == "checkpoint" then
+            print ("Enabled checkpoint at:", other.x, other.y)
+            self.checkpoint = other
+            return -1
+        end
+
+        local oldX, oldY = self.circle.body:getPosition()
+        if x < oldX then
+            self.blocked.left = true
+        else
+            self.blocked.right = true
+        end
+
+        return 0
+    end
+    return callback
+end
+
+function player:getTopCallback()
+    local self = self
+    local function callback(fixture, x, y, xn, yn, fraction)
+        other = fixture:getUserData()
+        if other.label == "evilbox" then
+            print("DEATHSTOMP")
+            self:dead()
+            return 0
+        else
+            return -1
+        end
+    end
+    return callback
+end
+
 function player:print()
     print("--- Player info: ---")
     print("state:\t", self.state)
     print("position: ", self.circle:getX(), self.circle:getY())
     print("moveVector: ", self.moveVector.x, self.moveVector.y)
     print()
+end
+
+function player:dead()
+    love.event.push("reload")
 end
 
 function player:load(world)
@@ -65,11 +121,18 @@ function player:load(world)
     self.circle.fixture:setUserData(self)
 
     self.groundCallback = self:getGroundCallback()
+    self.leftRightCallback = self:getLeftRightCallback()
+    self.topCallback = self:getTopCallback()
 end
 
 function player:reload()
-    moveVector = { x = 0, y = 0}
-    self.circle.body:setPosition(self.start.x, self.start.y)
+    self.moveVector = { x = 0, y = 0}
+    if self.checkpoint ~= nil then
+        self.circle.body:setPosition(self.checkpoint.x, self.checkpoint.y)
+    else
+        self.circle.body:setPosition(self.start.x, self.start.y)
+    end
+    self.circle.body:setLinearVelocity(0,0)
 end
 
 function player:update(dt)
@@ -81,9 +144,25 @@ function player:update(dt)
     self.moveVector.y = input.getYAxis()
 
     self.onGround = false
+    self.blocked = { left = false, right = false }
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
                   self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
                   self.groundCallback)
+    self.world:rayCast(self.circle:getX(), self.circle:getY(), 
+                  self.circle:getX() + self.circle:getRadius(), self.circle:getY(), 
+                  self.leftRightCallback)
+    self.world:rayCast(self.circle:getX(), self.circle:getY(), 
+                  self.circle:getX() - self.circle:getRadius(), self.circle:getY(), 
+                  self.leftRightCallback)
+    self.world:rayCast(self.circle:getX(), self.circle:getY(), 
+                  self.circle:getX(), self.circle:getY() - self.circle:getRadius(), 
+                  self.topCallback)
+
+    if self.blocked.right and self.blocked.left then
+        print("SQUASHED")
+        self:dead()
+        return
+    end
 
     self.state = self.onGround and "ground" or "air"
 

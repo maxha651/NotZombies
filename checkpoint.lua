@@ -11,14 +11,16 @@ checkpoint.height = 0
 function checkpoint:getLeftRightCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
+        other = fixture:getUserData()
+        other.checkpoint = self
         return 0
     end
     return callback
 end
 
 function checkpoint:load(world, x, y, width, height)
-    print(x, y, width, height)
     self.world = world
+    self.x, self.y = x, y
 
     self.rect = love.filesystem.load("rect.lua")()
     self.rect:load(world, x, y, width, height, nil)
@@ -30,11 +32,22 @@ function checkpoint:load(world, x, y, width, height)
     self.leftRightCallback = self:getLeftRightCallback()
 end
 
+function checkpoint:reload()
+end
+
 function checkpoint:update()
+    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+                       self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
+                       self.leftRightCallback)
+    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+                       self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
+                       self.leftRightCallback)
 end
 
 function checkpoint:draw()
-    self.rect:draw()
+    if physicsDebug then
+        self.rect:draw()
+    end
 end
 
 function checkpoint:print()
