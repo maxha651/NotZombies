@@ -43,7 +43,7 @@ function player:getGroundCallback()
     local self = self
     local function groundHitCallback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
-        if other == self then
+        if other == self or other.label == "checkpoint" then
             return -1
         end
 
