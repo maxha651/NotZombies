@@ -7,10 +7,11 @@ local maxSpeed = 100
 local density = 0.1
 local dazedTime = 1
 local angryTime = 1
+local topRaycastPadding = 3
 local groundRaycastPadding = 5
-local sideRaycastPadding = 5
+local sideRaycastPadding = 3
 local chasePadding = 0.1 -- % of player width
-local stackTime = 1
+local stackTime = 0.3
 local tileHeight = 70
 local tileWidth = 70
 
@@ -28,6 +29,7 @@ evilbox.lastPosition = { x = 0, y = 0 }
 evilbox.rect = nil
 evilbox.world = nil
 evilbox.chasee = nil
+evilbox.topCallback = nil
 evilbox.groundCallback = nil
 evilbox.leftRightCallback = nil
 evilbox.tmpstate = {}
@@ -38,7 +40,7 @@ function evilbox:playerStompCallback(other)
 end
 
 function evilbox:startStacking()
-    self.updateOverride = evilbox.stackUpdate
+    self.updateOverride = self.stackUpdate
     self.stackStart = self.rect:getY()
     self.stackEnd = self.rect:getY() - tileHeight
     self.startStackTime = love.timer.getTime()
@@ -63,14 +65,26 @@ end
 -- Callbacks below are used for raycasting and should (I think, bad docs)
 -- be able to be considered as part of the update loop
 
+function evilbox:getTopCallback()
+    local self = self
+    local function callback(fixture, x, y, xn, yn, fraction)
+        other = fixture:getUserData()
+
+        if other.label == "evilbox" then
+            self.tmpstate.other.top = other
+            self.rect.body:setLinearVelocity(0,0)
+            -- TODO change to top control ?
+            self.dazedTimer = love.timer.getTime() + dazedTime
+        end
+        return 0
+    end
+    return callback
+end
+
 function evilbox:getGroundCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
-        -- Call "you were stomped" callback
-        if other and other.wasHitCallback then
-            other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
-        end
 
         if other == self or other.label == "player" then
             return -1
@@ -78,7 +92,9 @@ function evilbox:getGroundCallback()
 
         self.tmpstate.onGround = true
         local oldX, oldY = self.rect.body:getPosition()
-        self.rect.body:setPosition(oldX, y - self.rect.height/2)
+        if oldY ~= y - self.rect:getHeight()/2 then
+            self.rect.body:setPosition(oldX, y - self.rect:getHeight()/2)
+        end
         return 0
     end
     return callback
@@ -90,7 +106,7 @@ function evilbox:getLeftRightCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
 
-        other = fixture:getUserData()
+        local other = fixture:getUserData()
 
         if other == self or other.label == "player" then
             return -1
@@ -115,7 +131,8 @@ function evilbox:getLeftRightCallback()
 
         if relativeVelocityX > maxSpeed/2 then
             -- SPECIAL STACK CASE
-            if other.startStacking and other.blocked[dirString] then
+            if other.startStacking and other.blocked[dirString] and 
+                self.other[dirString == "left" and "right" or "left"] then
                 --self.other[dirString == "left" and "right" or "left"] then
                 -- if two boxes (or more) crash into another (still) one,
                 -- then stack the crashee. This collision should be ignored
@@ -127,11 +144,11 @@ function evilbox:getLeftRightCallback()
 
         if relativeVelocityX > 0 then
             self.rect.body:setLinearVelocity(0,0)
-            self.rect.body:setPosition(x - dir * self.rect:getWidth()/2, oldY)
+            self.rect.body:setPosition(x - dir * (self.rect:getWidth()/2), oldY)
         end
 
-        self.tmpstate.blocked[dirString] = true;
-        -- Update nearby box reference
+        -- Update nearby thing reference
+        self.tmpstate.blocked[dirString] = true
         self.tmpstate.other[dirString] = other
 
         return 0
@@ -165,6 +182,7 @@ function evilbox:load(world, x, y, width, height)
     self.rect.fixture:setUserData(self)
     self.rect.fixture:setCategory(evilboxCollisionMask)
 
+    self.topCallback = self:getTopCallback()
     self.groundCallback = self:getGroundCallback()
     self.leftRightCallback = self:getLeftRightCallback()
 end
@@ -187,14 +205,17 @@ function evilbox:update(dt)
     -- Use temporary values to still have access to old ones
     self.tmpstate.onGround = false
     self.tmpstate.blocked = { left = false, right = false }
-    self.tmpstate.other = { left = nil, right = nil }
+    self.tmpstate.other = {}
     -- update some status values (and other stuff)
+    --self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+    --                   self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 
+    --                   + topRaycastPadding, self.topCallback)
     self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
-                       self.rect:getX() - self.rect:getWidth()/2, 
+                       self.rect:getX() - (self.rect:getWidth()/2 - sideRaycastPadding), 
                        self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
                        self.groundCallback)
     self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
-                       self.rect:getX() + self.rect:getWidth()/2, 
+                       self.rect:getX() + (self.rect:getWidth()/2 - sideRaycastPadding), 
                        self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
                        self.groundCallback)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
@@ -203,11 +224,23 @@ function evilbox:update(dt)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
                        self.rect:getX() - (self.rect:getWidth()/2 + sideRaycastPadding), 
                        self.rect:getY(), self.leftRightCallback)
-    -- Update to new values
+
     local key, val
+    -- The nearbe object check needs to be a bit more persistent
+    for key, val in pairs(self.other) do
+        if val.getX and val:getX() < self.rect:getX() + 1.5*self.rect:getWidth()
+            and val:getX() > self.rect:getX() - 1.5*self.rect:getWidth() then
+            -- Save old nearby object
+            self.tmpstate.other[key] = val
+        end
+    end
+    -- Update to new values
     for key, val in pairs(self.tmpstate) do
         self[key] = val
     end
+    self.onGround = self.tmpstate.onGround
+    self.blocked = self.tmpstate.blocked
+    self.other = self.tmpstate.other
 
     -- Check for special 
 
@@ -270,6 +303,13 @@ end
 
 function evilbox:updateVelocity()
     if self.stopping then
+        if self.rect.body:getLinearVelocity() < 0 and self.blocked.left or
+            self.rect.body:getLinearVelocity() > 0 and self.blocked.right then
+            -- We are blocked, stop immediately
+            self.stopping = false
+            return
+        end
+
         local currX, lastX = self.rect:getX(), self.lastPosition.x
         local width = self.rect:getWidth()
         -- Align box side to tile width

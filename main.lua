@@ -77,6 +77,11 @@ end
 
 function love.update(dt)
     require("lurker/lurker").update()
+    
+    if love.keyboard.isDown('r') then
+        reload()
+    end
+
 
     for npcType, _ in pairs(npcs) do
         for _, npc in ipairs(npcs[npcType]) do
@@ -90,7 +95,7 @@ function love.update(dt)
     map:update(dt)
     world:update(dt)
 
-    --printDebug()
+    printDebug()
 end
 
 function love.draw()
