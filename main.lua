@@ -49,7 +49,7 @@ function love.load()
     input.load()
 
     -- Load Tiled map
-    map = sti.new("map/map02.lua", { "box2d" })
+    map = sti.new("map/map03.lua", { "box2d" })
 
     -- Load physics
     love.physics.setMeter(oneMeter)

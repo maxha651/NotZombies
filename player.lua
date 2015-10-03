@@ -31,13 +31,8 @@ player.groundCallback = nil
 player.leftRightCallback = nil
 player.topCallback = nil
 
---function player:wasHitCallback(fixture, x, y, xn, yn, fraction, other)
---    print("PLAYER HIT")
---    if other.label == "evilbox" then
---        print("DEATHSTOMP")
---        self:dead()
---    end
---end
+-- Callbacks below are used for raycasting and should (I think, bad docs)
+-- be able to be considered as part of the update loop
 
 function player:getGroundCallback()
     local self = self
@@ -49,8 +44,8 @@ function player:getGroundCallback()
 
         self.onGround = true
         -- Call "you were stomped" callback
-        if other and other.wasHitCallback then
-            other.wasHitCallback(other, fixture, x, y, xn, yn, fraction, self)
+        if other and other.playerStompCallback then
+            other.playerStompCallback(other, self)
         end
         return 0
     end
