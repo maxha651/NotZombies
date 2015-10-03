@@ -4,10 +4,17 @@ love.filesystem.load("player.lua")()
 love.filesystem.load("input.lua")()
 love.filesystem.load("evilbox.lua")()
 
+-- Collision masks used by Box2d (1 is default ?)
+playerCollisionMask = 2
+evilboxCollisionMask = 3
+
 prePath = love.filesystem.getWorkingDirectory
 
 physicsDebug = true
 oneMeter = 70
+-- Loaded from Tiled map
+tileWidth = 0
+tileHeight = 0
 
 debug_timer = 0
 
@@ -50,6 +57,8 @@ function love.load()
 
     -- Load Tiled map
     map = sti.new("map/map03.lua", { "box2d" })
+    tileWidth = map.tileWidth
+    tileHeight = map.tileHeight
 
     -- Load physics
     love.physics.setMeter(oneMeter)

@@ -3,7 +3,7 @@ love.filesystem.load("input.lua")()
 
 player = {}
 
-local playerStart = { x = 2200, y = 850 }
+local playerStart = { x = 3300, y = 850 }
 local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/circle-ph.png"
@@ -114,6 +114,7 @@ function player:load(world)
     self.circle.body:setSleepingAllowed(false)
     self.circle.body:setMass(mass)
     self.circle.fixture:setUserData(self)
+    self.circle.fixture:setCategory(playerCollisionMask)
 
     self.groundCallback = self:getGroundCallback()
     self.leftRightCallback = self:getLeftRightCallback()

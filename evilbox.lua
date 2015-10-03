@@ -7,9 +7,12 @@ local maxSpeed = 100
 local density = 0.1
 local dazedTime = 1
 local angryTime = 1
-local groundRaycastPadding = 3
-local sideRaycastPadding = 3
+local groundRaycastPadding = 5
+local sideRaycastPadding = 5
 local chasePadding = 0.1 -- % of player width
+local stackTime = 1
+local tileHeight = 70
+local tileWidth = 70
 
 evilbox.label = "evilbox"
 evilbox.state = "ground"
@@ -20,17 +23,41 @@ evilbox.other = { left = nil, right = nil }
 evilbox.dazedTimer = 0
 evilbox.angryTimer = 0
 evilbox.start = { x = 0, y = 0 }
-evilbox.collisionForce = 0
+evilbox.lastPosition = { x = 0, y = 0 }
 
 evilbox.rect = nil
 evilbox.world = nil
 evilbox.chasee = nil
 evilbox.groundCallback = nil
 evilbox.leftRightCallback = nil
+evilbox.tmpstate = {}
 
 function evilbox:playerStompCallback(other)
     self.chasee = other
     self.angryTimer = love.timer.getTime() + angryTime
+end
+
+function evilbox:startStacking()
+    self.updateOverride = evilbox.stackUpdate
+    self.stackStart = self.rect:getY()
+    self.stackEnd = self.rect:getY() - tileHeight
+    self.startStackTime = love.timer.getTime()
+    self.currentStackTime = self.startStackTime
+    -- Ignore collisions from other boxes during stack
+    self.rect.fixture:setMask(evilboxCollisionMask)
+end
+
+function evilbox:stackUpdate(dt)
+    self.currentStackTime = self.currentStackTime + dt
+    local lerp = (self.currentStackTime - self.startStackTime) / stackTime
+    if lerp >= 1 then
+        self.rect.body:setPosition(self.rect:getX(), self.stackEnd)
+        self.rect.fixture:setMask()
+        self.updateOverride = nil
+    else
+        self.rect.body:setPosition(self.rect:getX(), self.stackStart * (1 - lerp)
+                                  + self.stackEnd * lerp)
+    end
 end
 
 -- Callbacks below are used for raycasting and should (I think, bad docs)
@@ -49,7 +76,7 @@ function evilbox:getGroundCallback()
             return -1
         end
 
-        self.onGround = true
+        self.tmpstate.onGround = true
         local oldX, oldY = self.rect.body:getPosition()
         self.rect.body:setPosition(oldX, y - self.rect.height/2)
         return 0
@@ -57,6 +84,8 @@ function evilbox:getGroundCallback()
     return callback
 end
 
+-- Will return -1 if collision is to be ignored, update state as late as 
+-- possible so we don't get some trash state on collision ignore
 function evilbox:getLeftRightCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
@@ -67,16 +96,17 @@ function evilbox:getLeftRightCallback()
             return -1
         end
 
+        -- TODO HACK
+        if other.label == "evilbox" and other.rect.fixture:getMask() == evilboxCollisionMask then
+            return -1
+        end
+
         local oldX, oldY = self.rect.body:getPosition()
         local dir = x < oldX and -1 or 1
         local dirString = x < oldX and "left" or "right"
         local otherVelocityX = 0
 
-        self.blocked[dirString] = true;
-
         if other.label == "evilbox" then
-            -- Update nearby box reference
-            self.other[dirString] = other
             -- Check relative velocity if another box
             otherVelocityX = other.rect.body:getLinearVelocity()
         end
@@ -84,18 +114,30 @@ function evilbox:getLeftRightCallback()
         local relativeVelocityX = dir * (self.rect.body:getLinearVelocity() - otherVelocityX)
 
         if relativeVelocityX > maxSpeed/2 then
+            -- SPECIAL STACK CASE
+            if other.startStacking and other.blocked[dirString] then
+                --self.other[dirString == "left" and "right" or "left"] then
+                -- if two boxes (or more) crash into another (still) one,
+                -- then stack the crashee. This collision should be ignored
+                other:startStacking()
+                return -1
+            end
             self.dazedTimer = love.timer.getTime() + dazedTime
         end
+
         if relativeVelocityX > 0 then
             self.rect.body:setLinearVelocity(0,0)
             self.rect.body:setPosition(x - dir * self.rect:getWidth()/2, oldY)
         end
 
+        self.tmpstate.blocked[dirString] = true;
+        -- Update nearby box reference
+        self.tmpstate.other[dirString] = other
+
         return 0
     end
     return callback
 end
-
 
 function evilbox:print()
     print("--- evilbox info: ---")
@@ -121,6 +163,7 @@ function evilbox:load(world, x, y, width, height)
     self.rect.body:setFixedRotation(true)
     self.rect.body:setLinearVelocity(0, 0)
     self.rect.fixture:setUserData(self)
+    self.rect.fixture:setCategory(evilboxCollisionMask)
 
     self.groundCallback = self:getGroundCallback()
     self.leftRightCallback = self:getLeftRightCallback()
@@ -136,10 +179,15 @@ function evilbox:reload()
 end
 
 function evilbox:update(dt)
-    -- reset some status values
-    self.onGround = false
-    self.blocked = { left = false, right = false }
-    self.boxLeft, self.boxRight = nil, nil
+    if self.updateOverride then
+        self:updateOverride(dt)
+        return
+    end
+
+    -- Use temporary values to still have access to old ones
+    self.tmpstate.onGround = false
+    self.tmpstate.blocked = { left = false, right = false }
+    self.tmpstate.other = { left = nil, right = nil }
     -- update some status values (and other stuff)
     self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
                        self.rect:getX() - self.rect:getWidth()/2, 
@@ -155,12 +203,19 @@ function evilbox:update(dt)
     self.world:rayCast(self.rect:getX(), self.rect:getY(), 
                        self.rect:getX() - (self.rect:getWidth()/2 + sideRaycastPadding), 
                        self.rect:getY(), self.leftRightCallback)
+    -- Update to new values
+    local key, val
+    for key, val in pairs(self.tmpstate) do
+        self[key] = val
+    end
+
+    -- Check for special 
 
     self.state = self.onGround and "ground" or "air"
 
     if self.onGround and self.rect.body:getType() ~= "kinematic" then
         self.rect.body:setType("kinematic")
-        self.rect.body:setLinearVelocity(0,0)
+        self:setVelocity(0,0)
     elseif not self.onGround and self.rect.body:getType() ~= "dynamic" then
         self.rect.body:setType("dynamic")
     end
@@ -170,12 +225,12 @@ function evilbox:update(dt)
         self.state = "dazed"
         -- Forget about chasing
         self.chasee = nil
-        self.rect.body:setLinearVelocity(0,0) -- not really needed
+        self:setVelocity(0,0) -- not really needed
 
     -- Or initally angry which should be very similar (make same?)
     elseif love.timer.getTime() < self.angryTimer then
         self.state = "angry"
-        self.rect.body:setLinearVelocity(0,0)
+        self:setVelocity(0,0)
 
     -- Then check if we want to chase someone/something
     elseif self.onGround and self.chasee then
@@ -187,17 +242,17 @@ function evilbox:update(dt)
         if othX < myX - rect:getWidth() * chasePadding 
             and not self.blocked.left then
             self.state = "chasing"
-            self.rect.body:setLinearVelocity(-maxSpeed, 0)
+            self:setVelocity(-maxSpeed, 0)
 
         -- Player is to the right of us + padding
         elseif othX > myX + rect:getWidth() * chasePadding 
             and not self.blocked.right then
             self.state = "chasing"
-            self.rect.body:setLinearVelocity(maxSpeed, 0)
+            self:setVelocity(maxSpeed, 0)
 
         -- Player is on top of us, we don't like that
         elseif self.state ~= "angry" then
-            self.rect.body:setLinearVelocity(0, 0)
+            self:setVelocity(0, 0)
             self.state = "angry"
 
         end
@@ -207,6 +262,41 @@ function evilbox:update(dt)
         -- Just to be sure
         self.chasee = nil
     end
+
+    self:updateVelocity()
+
+    self.lastPosition.x, self.lastPosition.y = self.rect.body:getX(), self.rect.body:getY()
+end
+
+function evilbox:updateVelocity()
+    if self.stopping then
+        local currX, lastX = self.rect:getX(), self.lastPosition.x
+        local width = self.rect:getWidth()
+        -- Align box side to tile width
+        currX = currX + width / 2
+        lastX = lastX + width / 2
+        if math.abs(currX % width) > width*0.75 and math.abs(lastX % width) < width*0.25 then
+            self.rect.body:setLinearVelocity(0, 0)
+            self.rect.body:setPosition((currX + (width - currX % width)) - width/2, 
+                                       self.rect.body:getY())
+            self.stopping = false
+        end
+        if math.abs(currX % width) < width*0.25 and math.abs(lastX % width) > width*0.75 then
+            self.rect.body:setLinearVelocity(0, 0)
+            self.rect.body:setPosition((currX - currX % width) - width/2, 
+                                       self.rect.body:getY())
+            self.stopping = false
+        end
+    end
+end
+
+function evilbox:setVelocity(x, y)
+    if x == 0 and self.rect.body:getLinearVelocity() ~= 0 then
+        self.stopping = true
+    else
+        self.rect.body:setLinearVelocity(x, y)
+    end
+    -- TODO self.velocityToReach = { x = x, y = y }
 end
 
 function evilbox:draw()
