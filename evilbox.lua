@@ -70,11 +70,11 @@ function evilbox:getTopCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
 
-        if other.label == "evilbox" then
+        -- Only update if topcontroller has left or another at top
+        if other.label == "evilbox" and self.other.top ~= other then
             self.tmpstate.other.top = other
             self.rect.body:setLinearVelocity(0,0)
-            -- TODO change to top control ?
-            self.dazedTimer = love.timer.getTime() + dazedTime
+            self.state = "topControlled"
         end
         return 0
     end
@@ -202,131 +202,154 @@ function evilbox:update(dt)
         return
     end
 
-    -- Use temporary values to still have access to old ones
-    self.tmpstate.onGround = false
-    self.tmpstate.blocked = { left = false, right = false }
-    self.tmpstate.other = {}
-    -- update some status values (and other stuff)
-    --self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-    --                   self.rect:getX(), self.rect:getY() + self.rect:getHeight()/2 
-    --                   + topRaycastPadding, self.topCallback)
-    self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
-                       self.rect:getX() - (self.rect:getWidth()/2 - sideRaycastPadding), 
-                       self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
-                       self.groundCallback)
-    self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
-                       self.rect:getX() + (self.rect:getWidth()/2 - sideRaycastPadding), 
-                       self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
-                       self.groundCallback)
-    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                       self.rect:getX() + (self.rect:getWidth()/2 + sideRaycastPadding), 
-                       self.rect:getY(), self.leftRightCallback)
-    self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                       self.rect:getX() - (self.rect:getWidth()/2 + sideRaycastPadding), 
-                       self.rect:getY(), self.leftRightCallback)
+    local function updateRaycast()
+        -- Use temporary values to still have access to old ones
+        self.tmpstate.onGround = false
+        self.tmpstate.blocked = { left = false, right = false }
+        self.tmpstate.other = {}
+        -- update some status values (and other stuff)
+        self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+                           self.rect:getX(), self.rect:getY() - (self.rect:getHeight()/2 
+                                                                 + topRaycastPadding), 
+                           self.topCallback)
+        self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
+                           self.rect:getX() - (self.rect:getWidth()/2 - sideRaycastPadding), 
+                           self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
+                           self.groundCallback)
+        self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
+                           self.rect:getX() + (self.rect:getWidth()/2 - sideRaycastPadding), 
+                           self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
+                           self.groundCallback)
+        self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+                           self.rect:getX() + (self.rect:getWidth()/2 + sideRaycastPadding), 
+                           self.rect:getY(), self.leftRightCallback)
+        self.world:rayCast(self.rect:getX(), self.rect:getY(), 
+                           self.rect:getX() - (self.rect:getWidth()/2 + sideRaycastPadding), 
+                           self.rect:getY(), self.leftRightCallback)
+    end
 
-    local key, val
-    -- The nearbe object check needs to be a bit more persistent
-    for key, val in pairs(self.other) do
-        if val.getX and val:getX() < self.rect:getX() + 1.5*self.rect:getWidth()
-            and val:getX() > self.rect:getX() - 1.5*self.rect:getWidth() then
-            -- Save old nearby object
-            self.tmpstate.other[key] = val
+    local function updateState()
+        local key, val
+        -- The nearbe object check needs to be a bit more persistent
+        for key, val in pairs(self.other) do
+            -- Only check for left-right (top is trouble). Getting ugly
+            if key == "left" or key == "right" then
+                if val.getX and val:getX() < self.rect:getX() + 1.5*self.rect:getWidth()
+                    and val:getX() > self.rect:getX() - 1.5*self.rect:getWidth() then
+                    -- Save old nearby object
+                    self.tmpstate.other[key] = val
+                end
+            end
         end
-    end
-    -- Update to new values
-    for key, val in pairs(self.tmpstate) do
-        self[key] = val
-    end
-    self.onGround = self.tmpstate.onGround
-    self.blocked = self.tmpstate.blocked
-    self.other = self.tmpstate.other
+        -- Update to new values
+        for key, val in pairs(self.tmpstate) do
+            self[key] = val
+        end
 
-    -- Check for special 
-
-    self.state = self.onGround and "ground" or "air"
-
-    if self.onGround and self.rect.body:getType() ~= "kinematic" then
-        self.rect.body:setType("kinematic")
-        self:setVelocity(0,0)
-    elseif not self.onGround and self.rect.body:getType() ~= "dynamic" then
-        self.rect.body:setType("dynamic")
+        -- Update state string
+        self.state = self.onGround and "ground" or "air"
     end
 
-    -- First check if incapacitated
-    if love.timer.getTime() < self.dazedTimer then 
-        self.state = "dazed"
-        -- Forget about chasing
-        self.chasee = nil
-        self:setVelocity(0,0) -- not really needed
+    local function updatePhysics()
 
-    -- Or initally angry which should be very similar (make same?)
-    elseif love.timer.getTime() < self.angryTimer then
-        self.state = "angry"
-        self:setVelocity(0,0)
+        if self.onGround and self.rect.body:getType() ~= "kinematic" then
+            self.rect.body:setType("kinematic")
+            self:setVelocity(0,0)
+        elseif not self.onGround and self.rect.body:getType() ~= "dynamic" then
+            self.rect.body:setType("dynamic")
+        end
 
-    -- Then check if we want to chase someone/something
-    elseif self.onGround and self.chasee then
+        -- First check if incapacitated
+        if love.timer.getTime() < self.dazedTimer then 
+            self.state = "dazed"
+            -- Forget about chasing
+            self.chasee = nil
+            self:setVelocity(0,0) -- not really needed
 
-        local othX = self.chasee:getX()
-        local myX = self.rect.body:getX()
-
-        -- Player is to the left of us - padding
-        if othX < myX - rect:getWidth() * chasePadding 
-            and not self.blocked.left then
-            self.state = "chasing"
-            self:setVelocity(-maxSpeed, 0)
-
-        -- Player is to the right of us + padding
-        elseif othX > myX + rect:getWidth() * chasePadding 
-            and not self.blocked.right then
-            self.state = "chasing"
-            self:setVelocity(maxSpeed, 0)
-
-        -- Player is on top of us, we don't like that
-        elseif self.state ~= "angry" then
-            self:setVelocity(0, 0)
+            -- Or initally angry which should be very similar (make same?)
+        elseif love.timer.getTime() < self.angryTimer then
             self.state = "angry"
+            self:setVelocity(0,0)
 
+            -- Then check if we want to chase someone/something
+        elseif self.onGround and self.chasee then
+
+            local othX = self.chasee:getX()
+            local myX = self.rect.body:getX()
+
+            -- Player is to the left of us - padding
+            if othX < myX - rect:getWidth() * chasePadding 
+                and not self.blocked.left then
+                self.state = "chasing"
+                self:setVelocity(-maxSpeed, 0)
+
+                -- Player is to the right of us + padding
+            elseif othX > myX + rect:getWidth() * chasePadding 
+                and not self.blocked.right then
+                self.state = "chasing"
+                self:setVelocity(maxSpeed, 0)
+
+                -- Player is on top of us, we don't like that
+            elseif self.state ~= "angry" then
+                self:setVelocity(0, 0)
+                self.state = "angry"
+
+            end
+            -- Otherwise, idle
+        else
+            self.state = "idle"
+            -- Just to be sure
+            self.chasee = nil
         end
-    -- Otherwise, idle
-    else
-        self.state = "idle"
-        -- Just to be sure
-        self.chasee = nil
     end
 
-    self:updateVelocity()
+    local function updateStopVelocity()
+        if self.stopping then
+            if self.rect.body:getLinearVelocity() < 0 and self.blocked.left or
+                self.rect.body:getLinearVelocity() > 0 and self.blocked.right then
+                -- We are blocked, stop immediately
+                self.stopping = false
+                return
+            end
 
-    self.lastPosition.x, self.lastPosition.y = self.rect.body:getX(), self.rect.body:getY()
-end
-
-function evilbox:updateVelocity()
-    if self.stopping then
-        if self.rect.body:getLinearVelocity() < 0 and self.blocked.left or
-            self.rect.body:getLinearVelocity() > 0 and self.blocked.right then
-            -- We are blocked, stop immediately
-            self.stopping = false
-            return
+            local currX, lastX = self.rect:getX(), self.lastPosition.x
+            local width = self.rect:getWidth()
+            -- Align box side to tile width
+            currX = currX + width / 2
+            lastX = lastX + width / 2
+            if math.abs(currX % width) > width*0.75 and math.abs(lastX % width) < width*0.25 then
+                self.rect.body:setLinearVelocity(0, 0)
+                -- Setting proper pos done in raycast instead... 
+                --self.rect.body:setPosition((currX + (width - currX % width)) - width/2, 
+                --                           self.rect.body:getY())
+                self.stopping = false
+            end
+            if math.abs(currX % width) < width*0.25 and math.abs(lastX % width) > width*0.75 then
+                self.rect.body:setLinearVelocity(0, 0)
+                --self.rect.body:setPosition((currX - currX % width) - width/2, 
+                --                           self.rect.body:getY())
+                self.stopping = false
+            end
         end
 
-        local currX, lastX = self.rect:getX(), self.lastPosition.x
-        local width = self.rect:getWidth()
-        -- Align box side to tile width
-        currX = currX + width / 2
-        lastX = lastX + width / 2
-        if math.abs(currX % width) > width*0.75 and math.abs(lastX % width) < width*0.25 then
-            self.rect.body:setLinearVelocity(0, 0)
-            self.rect.body:setPosition((currX + (width - currX % width)) - width/2, 
-                                       self.rect.body:getY())
-            self.stopping = false
+        self.lastPosition.x = self.rect.body:getX()
+    end
+
+    local function updateTopControlled()
+        local velocityX = self.other.top:getX() - self.rect:getX()
+        if velocityX > 0 and not self.blocked.right or
+            velocityX < 0 and not self.blocked.left then
+            self.rect.body:setPosition(self.other.top:getX(), self.rect:getY())
         end
-        if math.abs(currX % width) < width*0.25 and math.abs(lastX % width) > width*0.75 then
-            self.rect.body:setLinearVelocity(0, 0)
-            self.rect.body:setPosition((currX - currX % width) - width/2, 
-                                       self.rect.body:getY())
-            self.stopping = false
-        end
+    end
+
+    updateRaycast()
+    updateState()
+    if self.other.top then
+        updateTopControlled()
+    else
+        updatePhysics()
+        updateStopVelocity()
     end
 end
 
