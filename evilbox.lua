@@ -70,6 +70,11 @@ function evilbox:getTopCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
 
+        -- TODO HACK
+        if other.label == "evilbox" and other.rect.fixture:getMask() == evilboxCollisionMask then
+            return -1
+        end
+
         -- Only update if topcontroller has left or another at top
         if other.label == "evilbox" and self.other.top ~= other then
             self.tmpstate.other.top = other
@@ -247,7 +252,7 @@ function evilbox:update(dt)
         end
 
         -- Update state string
-        self.state = self.onGround and "ground" or "air"
+        self.state = self.other.top and "topControlled" or (self.onGround and "ground" or "air")
     end
 
     local function updatePhysics()
@@ -336,10 +341,13 @@ function evilbox:update(dt)
     end
 
     local function updateTopControlled()
-        local velocityX = self.other.top:getX() - self.rect:getX()
-        if velocityX > 0 and not self.blocked.right or
-            velocityX < 0 and not self.blocked.left then
+        local diffX = self.other.top:getX() - self.rect:getX()
+        local otherVelX = self.other.top.rect.body:getLinearVelocity()
+        if (diffX * otherVelX > 0) and (diffX > 0 and not self.blocked.right or
+                                        diffX < 0 and not self.blocked.left) then
+            -- This is shaky
             self.rect.body:setPosition(self.other.top:getX(), self.rect:getY())
+            self.rect.body:setLinearVelocity(otherVelX, 0)
         end
     end
 
