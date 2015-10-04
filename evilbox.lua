@@ -1,7 +1,10 @@
 
+anim8 = require "anim8/anim8"
+
 evilbox = {}
 
 local imgPath = "gfx/characters/evilbox.png"
+local animImgPath = "gfx/characters/evileye-ani.png"
 
 local maxSpeed = 100
 local density = 0.1
@@ -14,6 +17,7 @@ local chasePadding = 0.1 -- % of player width
 local stackTime = 0.3
 local tileHeight = 70
 local tileWidth = 70
+local animDuration = 0.2
 
 evilbox.label = "evilbox"
 evilbox.state = "ground"
@@ -27,6 +31,7 @@ evilbox.start = { x = 0, y = 0 }
 evilbox.lastPosition = { x = 0, y = 0 }
 
 evilbox.rect = nil
+evilbox.anim = {}
 evilbox.world = nil
 evilbox.chasee = nil
 evilbox.topCallback = nil
@@ -78,7 +83,7 @@ function evilbox:getTopCallback()
         -- Only update if topcontroller has left or another at top
         if other.label == "evilbox" and self.other.top ~= other then
             self.tmpstate.other.top = other
-            self.rect.body:setLinearVelocity(0,0)
+            self:setVelocity(0,0)
             self.state = "topControlled"
         end
         return 0
@@ -186,6 +191,12 @@ function evilbox:load(world, x, y, width, height)
     self.rect.body:setLinearVelocity(0, 0)
     self.rect.fixture:setUserData(self)
     self.rect.fixture:setCategory(evilboxCollisionMask)
+
+    self.anim.img = love.graphics.newImage(animImgPath)
+    self.anim.grid = anim8.newGrid(tileWidth, tileHeight, self.anim.img:getWidth(), 
+                                   self.anim.img:getHeight(), 10, 10) -- margins
+    self.anim.anim = anim8.newAnimation(self.anim.grid(1,1), animDuration, "pauseAtEnd")
+    self.anim.flipped = false
 
     self.topCallback = self:getTopCallback()
     self.groundCallback = self:getGroundCallback()
@@ -359,6 +370,8 @@ function evilbox:update(dt)
         updatePhysics()
         updateStopVelocity()
     end
+
+    self.anim.anim:update(dt)
 end
 
 function evilbox:setVelocity(x, y)
@@ -371,6 +384,7 @@ function evilbox:setVelocity(x, y)
 end
 
 function evilbox:draw()
+    self.anim.anim:draw(self.anim.img, rect:getX(), rect:getY())
     self.rect:draw()
 end
 

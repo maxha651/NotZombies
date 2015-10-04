@@ -7,11 +7,11 @@ love.filesystem.load("evilbox.lua")()
 -- Collision masks used by Box2d (1 is default ?)
 playerCollisionMask = 2
 evilboxCollisionMask = 3
-
-prePath = love.filesystem.getWorkingDirectory
-
-physicsDebug = true
 oneMeter = 70
+
+debugInfo = false
+physicsDebug = true
+
 -- Loaded from Tiled map
 tileWidth = 0
 tileHeight = 0
@@ -95,7 +95,9 @@ function love.update(dt)
     map:update(dt)
     world:update(dt)
 
-    printDebug()
+    if debugInfo then
+        printDebug()
+    end
 end
 
 function love.draw()

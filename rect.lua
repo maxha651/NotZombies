@@ -41,7 +41,7 @@ function rect:draw()
     end
     if physicsDebug then
         love.graphics.setColor(255, 0, 0, 255)
-        love.graphics.rectangle("line", self.body:getX()-self.width/2, 
+        love.graphics.rectangle("line", self.body:getX() - self.width/2, 
                                 self.body:getY() - self.height/2, 
                                 self.width, self.height)
         love.graphics.setColor(255, 255, 255, 255)

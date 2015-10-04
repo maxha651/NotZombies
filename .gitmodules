@@ -4,3 +4,6 @@
 [submodule "tactile"]
 	path = tactile
 	url = https://github.com/tesselode/tactile.git
+[submodule "anim8"]
+	path = anim8
+	url = https://github.com/kikito/anim8.git
