@@ -72,6 +72,7 @@ end
 
 function evilbox:setAnim(mode)
     if self.anim[mode] and self.anim.current ~= mode then
+    print(mode)
         local oldFrame = self.anim[self.anim.current].position
         self.anim.current = mode
         self.anim[mode]:gotoFrame(6 - oldFrame)
@@ -96,12 +97,13 @@ function evilbox:getTopCallback()
             return -1
         end
 
-        -- Only update if topcontroller has left or another at top
-        if other.label == "evilbox" and self.other.top ~= other then
+        if other.label == "evilbox" then
+            if self.other.top ~= other then
+                -- Stop on first detect
+                self:setVelocity(0,0)
+            end
             self.tmpstate.other.top = other
-            self:setVelocity(0,0)
             self.state = "topControlled"
-            self.chasee = other.chasee
         end
         return 0
     end
@@ -399,7 +401,6 @@ function evilbox:update(dt)
         local otherVelX = self.other.top.rect.body:getLinearVelocity()
         if (diffX * otherVelX > 0) and (diffX > 0 and not self.blocked.right or
                                         diffX < 0 and not self.blocked.left) then
-            -- This is shaky
             self.rect.body:setPosition(self.other.top:getX(), self.rect:getY())
             self.rect.body:setLinearVelocity(otherVelX, 0)
         end
