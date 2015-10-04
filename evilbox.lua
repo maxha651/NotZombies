@@ -402,6 +402,9 @@ function evilbox:update(dt)
                                         diffX < 0 and not self.blocked.left) then
             self.rect.body:setPosition(self.other.top:getX(), self.rect:getY())
             self.rect.body:setLinearVelocity(otherVelX, 0)
+        else
+            -- TODO This is buggy
+            self:setVelocity(0,0)
         end
     end
 
