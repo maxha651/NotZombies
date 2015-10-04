@@ -129,6 +129,8 @@ function player:reload()
         self.circle.body:setPosition(self.start.x, self.start.y)
     end
     self.circle.body:setLinearVelocity(0,0)
+    self.circle.body:setAngle(0)
+    self.circle.body:setAngularVelocity(0)
 end
 
 function player:update(dt)
