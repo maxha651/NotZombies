@@ -249,34 +249,36 @@ function evilbox:update(dt)
         return
     end
 
+    -- update some status values by raycasting
     local function updateRaycast()
         -- Use temporary values to still have access to old ones
         self.tmpstate.onGround = false
         self.tmpstate.blocked = { left = false, right = false }
         self.tmpstate.other = {}
-        local x, y
         if self.rect:getEnabled() then
-            x, y = self.rect:getX(), self.rect:getY()
-        elseif self.circle:getEnabled() then
-            x, y = self.circle:getX(), self.circle:getY()
-        end
+            local x, y = self.rect:getX(), self.rect:getY()
 
-        -- update some status values (and other stuff)
-        self.world:rayCast(x, y, x, y - (self.rect:getHeight()/2 + topRaycastPadding), 
-                           self.topCallback)
-        self.world:rayCast(x - self.rect:getWidth()/2, y, 
-                           x - (self.rect:getWidth()/2 - sideRaycastPadding), 
-                           y + self.rect:getHeight()/2 + groundRaycastPadding, 
-                           self.groundCallback)
-        self.world:rayCast(x + self.rect:getWidth()/2, y, 
-                           x + (self.rect:getWidth()/2 - sideRaycastPadding), 
-                           y + self.rect:getHeight()/2 + groundRaycastPadding, 
-                           self.groundCallback)
-        self.world:rayCast(x, y, 
-                           x + (self.rect:getWidth()/2 + sideRaycastPadding), 
-                           y, self.leftRightCallback)
-        self.world:rayCast(x, y, x - (self.rect:getWidth()/2 + sideRaycastPadding), y, 
-                           self.leftRightCallback)
+            self.world:rayCast(x, y, x, y - (self.rect:getHeight()/2 + topRaycastPadding), 
+                               self.topCallback)
+            self.world:rayCast(x - self.rect:getWidth()/2, y, 
+                               x - (self.rect:getWidth()/2 - sideRaycastPadding), 
+                               y + self.rect:getHeight()/2 + groundRaycastPadding, 
+                               self.groundCallback)
+            self.world:rayCast(x + self.rect:getWidth()/2, y, 
+                               x + (self.rect:getWidth()/2 - sideRaycastPadding), 
+                               y + self.rect:getHeight()/2 + groundRaycastPadding, 
+                               self.groundCallback)
+            self.world:rayCast(x, y, 
+                               x + (self.rect:getWidth()/2 + sideRaycastPadding), 
+                               y, self.leftRightCallback)
+            self.world:rayCast(x, y, x - (self.rect:getWidth()/2 + sideRaycastPadding), y, 
+                               self.leftRightCallback)
+        elseif self.circle:getEnabled() then
+            local x, y = self.circle:getX(), self.circle:getY()
+            -- We only care whether we're on ground or not
+            self.world:rayCast(x, y, x,y + self.rect:getHeight()/2 + groundRaycastPadding, 
+                               self.groundCallback)
+        end
     end
 
     local function updateState()

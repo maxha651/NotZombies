@@ -8,7 +8,7 @@ return {
   height = 50,
   tilewidth = 70,
   tileheight = 70,
-  nextobjectid = 20,
+  nextobjectid = 22,
   properties = {},
   tilesets = {
     {
@@ -514,7 +514,7 @@ return {
         },
         {
           id = 6,
-          name = "start",
+          name = "",
           type = "checkpoint",
           shape = "rectangle",
           x = 5320,
@@ -527,12 +527,26 @@ return {
           properties = {}
         },
         {
-          id = 13,
+          id = 20,
           name = "",
           type = "checkpoint",
           shape = "rectangle",
-          x = 6720,
-          y = 1960,
+          x = 5810,
+          y = 1330,
+          width = 70,
+          height = 70,
+          rotation = 0,
+          gid = 19,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 21,
+          name = "start",
+          type = "checkpoint",
+          shape = "rectangle",
+          x = 2380,
+          y = 1400,
           width = 70,
           height = 70,
           rotation = 0,
