@@ -402,8 +402,11 @@ function evilbox:update(dt)
                                         diffX < 0 and not self.blocked.left) then
             self.rect.body:setPosition(self.other.top:getX(), self.rect:getY())
             self.rect.body:setLinearVelocity(otherVelX, 0)
+        elseif diffX * self.rect.body:getLinearVelocity() < 0 then
+            -- Stop immediately if we're moving away from controller
+            self.rect.body:setLinearVelocity(0,0)
         else
-            -- TODO This is buggy
+            -- Otherwise stop smoothly
             self:setVelocity(0,0)
         end
     end
