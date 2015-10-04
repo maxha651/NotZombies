@@ -8,16 +8,16 @@ local animImgPath = "gfx/characters/evileye-ani.png"
 
 local maxSpeed = 100
 local density = 0.1
-local dazedTime = 1
-local angryTime = 1
 local topRaycastPadding = 3
 local groundRaycastPadding = 5
 local sideRaycastPadding = 3
-local chasePadding = 0.1 -- % of player width
+local chasePadding = 0.5 -- % of player width
 local stackTime = 0.3
 local tileHeight = 70
 local tileWidth = 70
-local animDuration = 0.2
+local animDuration = 0.15
+local angryTime = animDuration * 5
+local dazedTime = 2
 
 evilbox.label = "evilbox"
 evilbox.state = "ground"
@@ -40,8 +40,10 @@ evilbox.leftRightCallback = nil
 evilbox.tmpstate = {}
 
 function evilbox:playerStompCallback(other)
-    self.chasee = other
-    self.angryTimer = love.timer.getTime() + angryTime
+    if self.state == "idle" then
+        self.chasee = other
+        self.angryTimer = love.timer.getTime() + angryTime
+    end
 end
 
 function evilbox:startStacking()
@@ -67,6 +69,19 @@ function evilbox:stackUpdate(dt)
     end
 end
 
+function evilbox:setAnim(mode)
+    if self.anim[mode] and self.anim.current ~= mode then
+        local oldFrame = self.anim[self.anim.current].position
+        self.anim.current = mode
+        self.anim[mode]:gotoFrame(6 - oldFrame)
+        self.anim[mode]:resume()
+    end
+end
+
+function evilbox:getAnim()
+    return self.anim.current
+end
+
 -- Callbacks below are used for raycasting and should (I think, bad docs)
 -- be able to be considered as part of the update loop
 
@@ -85,6 +100,7 @@ function evilbox:getTopCallback()
             self.tmpstate.other.top = other
             self:setVelocity(0,0)
             self.state = "topControlled"
+            self.chasee = other.chasee
         end
         return 0
     end
@@ -195,8 +211,10 @@ function evilbox:load(world, x, y, width, height)
     self.anim.img = love.graphics.newImage(animImgPath)
     self.anim.grid = anim8.newGrid(tileWidth, tileHeight, self.anim.img:getWidth(), 
                                    self.anim.img:getHeight(), 10, 10) -- margins
-    self.anim.anim = anim8.newAnimation(self.anim.grid(1,1), animDuration, "pauseAtEnd")
-    self.anim.flipped = false
+    self.anim["sleep"] = anim8.newAnimation(self.anim.grid("5-1",1), animDuration, "pauseAtEnd")
+    self.anim["awake"] = anim8.newAnimation(self.anim.grid("1-5",1), animDuration, "pauseAtEnd")
+    self.anim.current = "sleep"
+    self.anim[self.anim.current]:pauseAtEnd()
 
     self.topCallback = self:getTopCallback()
     self.groundCallback = self:getGroundCallback()
@@ -261,9 +279,6 @@ function evilbox:update(dt)
         for key, val in pairs(self.tmpstate) do
             self[key] = val
         end
-
-        -- Update state string
-        self.state = self.other.top and "topControlled" or (self.onGround and "ground" or "air")
     end
 
     local function updatePhysics()
@@ -294,13 +309,13 @@ function evilbox:update(dt)
             local myX = self.rect.body:getX()
 
             -- Player is to the left of us - padding
-            if othX < myX - rect:getWidth() * chasePadding 
+            if othX < myX - self.rect:getWidth() * chasePadding 
                 and not self.blocked.left then
                 self.state = "chasing"
                 self:setVelocity(-maxSpeed, 0)
 
                 -- Player is to the right of us + padding
-            elseif othX > myX + rect:getWidth() * chasePadding 
+            elseif othX > myX + self.rect:getWidth() * chasePadding 
                 and not self.blocked.right then
                 self.state = "chasing"
                 self:setVelocity(maxSpeed, 0)
@@ -362,6 +377,20 @@ function evilbox:update(dt)
         end
     end
 
+    local function updateAnimation()
+        -- mimic controller if exists
+        if self.other.top then
+            self:setAnim(self.other.top:getAnim())
+        -- Awake if chasing
+        elseif self.chasee then
+            self:setAnim("awake")
+        -- Otherwise sleep
+        elseif not self.chasee then
+            self:setAnim("sleep")
+        end
+        self.anim[self.anim.current]:update(dt)
+    end
+
     updateRaycast()
     updateState()
     if self.other.top then
@@ -370,8 +399,7 @@ function evilbox:update(dt)
         updatePhysics()
         updateStopVelocity()
     end
-
-    self.anim.anim:update(dt)
+    updateAnimation()
 end
 
 function evilbox:setVelocity(x, y)
@@ -384,7 +412,9 @@ function evilbox:setVelocity(x, y)
 end
 
 function evilbox:draw()
-    self.anim.anim:draw(self.anim.img, rect:getX(), rect:getY())
+    self.anim[self.anim.current]:draw(self.anim.img, 
+                                      self.rect:getX() - self.rect:getWidth()/2, 
+                                      self.rect:getY() - self.rect:getHeight()/2)
     self.rect:draw()
 end
 

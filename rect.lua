@@ -36,7 +36,8 @@ end
 
 function rect:draw()
     if img ~= nil then
-        love.graphics.draw(img, self.body:getX(), self.body:getY(), 0, 
+        love.graphics.draw(img, self.body:getX() - self.width/2, 
+                           self.body:getY() - self.height/2, 0, 
                            self.width / img:getWidth())
     end
     if physicsDebug then

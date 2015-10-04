@@ -104,7 +104,7 @@ function love.draw()
     local translateX = player:getX() - love.graphics:getWidth()/2
     local translateY = player:getY() - love.graphics:getHeight()/2
 
-    love.graphics.translate(-translateX, -translateY);
+    love.graphics.translate(-translateX, -translateY)
 
     love.graphics.setBackgroundColor(0x80,0x80,0x80)
 
@@ -117,9 +117,9 @@ function love.draw()
 
     -- Draw Collision Map (useful for debugging)
     love.graphics.setColor(255, 0, 0, 255)
-    map:box2d_draw(collision)
+    --map:box2d_draw(collision)
     love.graphics.setColor(255, 255, 255, 255)
-
+ 
     for npcType, _ in pairs(npcs) do
         for _, npc in ipairs(npcs[npcType]) do
             npc:draw()
