@@ -7,6 +7,7 @@ local playerStart = { x = 2500, y = 1400 }
 local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/circle-ph.png"
+local yOfDeath = 5000
 
 player.label = "player"
 
@@ -134,6 +135,11 @@ function player:reload()
 end
 
 function player:update(dt)
+    if self.circle:getY() > yOfDeath then
+        print("FLY YOU FOOLS")
+        self:dead()
+    end
+
     if input.getJump() ~= self.jump then
         self.jumpPool = self.jumpPoolMax
         self.jump = input.getJump()

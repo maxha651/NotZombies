@@ -72,7 +72,6 @@ end
 
 function evilbox:setAnim(mode)
     if self.anim[mode] and self.anim.current ~= mode then
-    print(mode)
         local oldFrame = self.anim[self.anim.current].position
         self.anim.current = mode
         self.anim[mode]:gotoFrame(6 - oldFrame)
@@ -422,7 +421,7 @@ function evilbox:update(dt)
 
     updateRaycast()
     updateState()
-    if self.other.top then
+    if self.other.top and self.onGround then
         updateTopControlled()
     else
         updatePhysics()
