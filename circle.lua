@@ -22,8 +22,13 @@ function circle:draw()
     if self.img ~= nil then
         local radius = self.shape:getRadius()
         local scale = 2*radius / self.img:getWidth()
+        love.graphics.push()
+        love.graphics.translate(self.body:getX(), (self.body:getY()))
+        love.graphics.rotate(self.body:getAngle())
+        love.graphics.translate(-self.body:getX(), -self.body:getY())
         love.graphics.draw(self.img, self.body:getX() - radius, 
                            self.body:getY() - radius, 0, scale)
+        love.graphics.pop()
     end
     if physicsDebug and self.body:isActive() then
         love.graphics.setColor(0, 0, 255, 255)
