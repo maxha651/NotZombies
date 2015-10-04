@@ -40,13 +40,21 @@ function rect:draw()
                            self.body:getY() - self.height/2, 0, 
                            self.width / img:getWidth())
     end
-    if physicsDebug then
+    if physicsDebug and self.body:isActive() then
         love.graphics.setColor(255, 0, 0, 255)
         love.graphics.rectangle("line", self.body:getX() - self.width/2, 
                                 self.body:getY() - self.height/2, 
                                 self.width, self.height)
         love.graphics.setColor(255, 255, 255, 255)
     end
+end
+
+function rect:setEnabled(enabled)
+    self.body:setActive(enabled)
+end
+
+function rect:getEnabled()
+    return self.body:isActive()
 end
 
 function rect:getX()

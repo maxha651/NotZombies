@@ -25,12 +25,20 @@ function circle:draw()
         love.graphics.draw(self.img, self.body:getX() - radius, 
                            self.body:getY() - radius, 0, scale)
     end
-    if physicsDebug then
+    if physicsDebug and self.body:isActive() then
         love.graphics.setColor(0, 0, 255, 255)
         love.graphics.circle("line", self.body:getX(), self.body:getY(), 
                              self.shape:getRadius())
         love.graphics.setColor(255, 255, 255, 255)
     end
+end
+
+function circle:setEnabled(enabled)
+    self.body:setActive(enabled)
+end
+
+function circle:getEnabled()
+    return self.body:isActive()
 end
 
 function circle:getX()

@@ -9,7 +9,7 @@ local animImgPath = "gfx/characters/evileye-ani.png"
 local maxSpeed = 100
 local density = 0.1
 local topRaycastPadding = 3
-local groundRaycastPadding = 5
+local groundRaycastPadding = 3
 local sideRaycastPadding = 3
 local chasePadding = 0.5 -- % of player width
 local stackTime = 0.3
@@ -31,6 +31,7 @@ evilbox.start = { x = 0, y = 0 }
 evilbox.lastPosition = { x = 0, y = 0 }
 
 evilbox.rect = nil
+evilbox.circle = nil
 evilbox.anim = {}
 evilbox.world = nil
 evilbox.chasee = nil
@@ -208,6 +209,16 @@ function evilbox:load(world, x, y, width, height)
     self.rect.fixture:setUserData(self)
     self.rect.fixture:setCategory(evilboxCollisionMask)
 
+    self.circle = love.filesystem.load("circle.lua")()
+    self.circle:load(world, x, y, width/2 - 2)
+    self.circle:setEnabled(false)
+    self.circle.fixture:setRestitution(0.0) -- bounce
+    self.circle.body:setSleepingAllowed(false)
+    self.circle.body:setMass(width*height*density)
+    self.circle.body:setFixedRotation(true)
+    self.circle.fixture:setUserData(self)
+    self.circle.fixture:setCategory(evilboxCollisionMask)
+
     self.anim.img = love.graphics.newImage(animImgPath)
     self.anim.grid = anim8.newGrid(tileWidth, tileHeight, self.anim.img:getWidth(), 
                                    self.anim.img:getHeight(), 10, 10) -- margins
@@ -225,9 +236,11 @@ function evilbox:reload()
     self.state = "idle"
     self.onGround = true
     self.chasee = nil
-    self.rect.body:setType("kinematic")
+    self.rect:setEnabled(true)
     self.rect.body:setLinearVelocity(0,0)
     self.rect.body:setPosition(self.start.x, self.start.y)
+    self.anim.current = "sleep"
+    self.anim[self.anim.current]:pauseAtEnd()
 end
 
 function evilbox:update(dt)
@@ -283,12 +296,21 @@ function evilbox:update(dt)
 
     local function updatePhysics()
 
-        if self.onGround and self.rect.body:getType() ~= "kinematic" then
-            self.rect.body:setType("kinematic")
-            self:setVelocity(0,0)
-        elseif not self.onGround and self.rect.body:getType() ~= "dynamic" then
-            self.rect.body:setType("dynamic")
+        if self.onGround and not self.rect:getEnabled() then
+            self.circle:setEnabled(false)
+            self.rect:setEnabled(true)
+            self.rect.body:setPosition(self.circle:getX(), self.circle:getY())
+            self.rect.body:setLinearVelocity(0,0)
+        elseif not self.onGround and self.rect:getEnabled() then
+            self.rect:setEnabled(false)
+            self.circle:setEnabled(true)
+            self.circle.body:setPosition(self.rect:getX(), self.rect:getY())
+            self.circle.body:setLinearVelocity(0,0)
         end
+        --elseif not self.onGround and not self.stopping then
+        --    local _, oldVelY = self.rect.body:getLinearVelocity()
+        --    self.rect.body:setLinearVelocity(0, oldVelY + 9.82 * dt)
+        --end
 
         -- First check if incapacitated
         if love.timer.getTime() < self.dazedTimer then 
@@ -412,10 +434,17 @@ function evilbox:setVelocity(x, y)
 end
 
 function evilbox:draw()
-    self.anim[self.anim.current]:draw(self.anim.img, 
-                                      self.rect:getX() - self.rect:getWidth()/2, 
-                                      self.rect:getY() - self.rect:getHeight()/2)
+    if (self.rect:getEnabled()) then
+        self.anim[self.anim.current]:draw(self.anim.img, 
+                                          self.rect:getX() - self.rect:getWidth()/2, 
+                                          self.rect:getY() - self.rect:getHeight()/2)
+    elseif (self.circle:getEnabled()) then
+        self.anim[self.anim.current]:draw(self.anim.img, 
+                                          self.circle:getX() - self.circle:getRadius(), 
+                                          self.circle:getY() - self.circle:getRadius())
+    end
     self.rect:draw()
+    self.circle:draw()
 end
 
 function evilbox:getX()

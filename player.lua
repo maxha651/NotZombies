@@ -3,7 +3,7 @@ love.filesystem.load("input.lua")()
 
 player = {}
 
-local playerStart = { x = 3300, y = 850 }
+local playerStart = { x = 2500, y = 1400 }
 local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/circle-ph.png"
@@ -142,7 +142,7 @@ function player:update(dt)
     self.onGround = false
     self.blocked = { left = false, right = false }
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
-                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 1, 
+                  self.circle:getX(), self.circle:getY() + self.circle:getRadius() + 3, 
                   self.groundCallback)
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
                   self.circle:getX() + self.circle:getRadius(), self.circle:getY(), 
