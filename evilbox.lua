@@ -254,25 +254,29 @@ function evilbox:update(dt)
         self.tmpstate.onGround = false
         self.tmpstate.blocked = { left = false, right = false }
         self.tmpstate.other = {}
+        local x, y
+        if self.rect:getEnabled() then
+            x, y = self.rect:getX(), self.rect:getY()
+        elseif self.circle:getEnabled() then
+            x, y = self.circle:getX(), self.circle:getY()
+        end
+
         -- update some status values (and other stuff)
-        self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                           self.rect:getX(), self.rect:getY() - (self.rect:getHeight()/2 
-                                                                 + topRaycastPadding), 
+        self.world:rayCast(x, y, x, y - (self.rect:getHeight()/2 + topRaycastPadding), 
                            self.topCallback)
-        self.world:rayCast(self.rect:getX() - self.rect:getWidth()/2, self.rect:getY(), 
-                           self.rect:getX() - (self.rect:getWidth()/2 - sideRaycastPadding), 
-                           self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
+        self.world:rayCast(x - self.rect:getWidth()/2, y, 
+                           x - (self.rect:getWidth()/2 - sideRaycastPadding), 
+                           y + self.rect:getHeight()/2 + groundRaycastPadding, 
                            self.groundCallback)
-        self.world:rayCast(self.rect:getX() + self.rect:getWidth()/2, self.rect:getY(), 
-                           self.rect:getX() + (self.rect:getWidth()/2 - sideRaycastPadding), 
-                           self.rect:getY() + self.rect:getHeight()/2 + groundRaycastPadding, 
+        self.world:rayCast(x + self.rect:getWidth()/2, y, 
+                           x + (self.rect:getWidth()/2 - sideRaycastPadding), 
+                           y + self.rect:getHeight()/2 + groundRaycastPadding, 
                            self.groundCallback)
-        self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                           self.rect:getX() + (self.rect:getWidth()/2 + sideRaycastPadding), 
-                           self.rect:getY(), self.leftRightCallback)
-        self.world:rayCast(self.rect:getX(), self.rect:getY(), 
-                           self.rect:getX() - (self.rect:getWidth()/2 + sideRaycastPadding), 
-                           self.rect:getY(), self.leftRightCallback)
+        self.world:rayCast(x, y, 
+                           x + (self.rect:getWidth()/2 + sideRaycastPadding), 
+                           y, self.leftRightCallback)
+        self.world:rayCast(x, y, x - (self.rect:getWidth()/2 + sideRaycastPadding), y, 
+                           self.leftRightCallback)
     end
 
     local function updateState()

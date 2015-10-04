@@ -10,7 +10,7 @@ evilboxCollisionMask = 3
 oneMeter = 70
 
 debugInfo = false
-physicsDebug = false 
+physicsDebug = true 
 
 -- Loaded from Tiled map
 tileWidth = 0
@@ -67,6 +67,11 @@ function love.load()
     collision = map:box2d_init(world)
     loadCustomLayers(map, world)
     player:load(world)
+
+    if npcs.checkpoint and npcs.checkpoint.start then
+        player.checkpoint = npcs.checkpoint.start
+        player:reload()
+    end
 end
 
 function love.quit()

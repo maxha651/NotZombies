@@ -11,7 +11,7 @@ local imgPath = "gfx/characters/circle-ph.png"
 player.label = "player"
 
 player.acceleration = { air = 20000, ground = 50000 }
-player.maxSpeed = 10000
+player.maxSpeed = 250
 player.jumpForce = 100000
 player.jumpPoolMax = 1
 player.friction = { air = 0.1, ground = 500 }
@@ -167,8 +167,8 @@ function player:update(dt)
     self.circle.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
 
     velX, velY = self.circle.body:getLinearVelocity()
-    if false and velX > self.maxSpeed then
-        self.circle.body:setLinearVelocity(self.maxSpeed, velY)
+    if math.abs(velX) > self.maxSpeed then
+        self.circle.body:setLinearVelocity(velX / math.abs(velX) * self.maxSpeed, velY)
     elseif math.abs(velX) < self.floorSpeed then
         velX = 0
         self.circle.body:setLinearVelocity(velX, velY)

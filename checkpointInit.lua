@@ -16,6 +16,9 @@ function checkpointInit.initLayer(map, layer, world)
                         object.y - map.tileheight/2, object.width, object.height)
 
         checkpointList[#checkpointList +1] = checkpoint
+        if object.name then
+            checkpointList[object.name] = checkpoint
+        end
     end
 
     -- Tell STI that we're handling stuff
