@@ -16,8 +16,9 @@ local stackTime = 0.3
 local tileHeight = 70
 local tileWidth = 70
 local animDuration = 0.15
+local blockedTimeout = 3
 local angryTime = animDuration * 5
-local dazedTime = 2
+local dazedTime = 3
 
 evilbox.label = "evilbox"
 evilbox.state = "ground"
@@ -25,6 +26,7 @@ evilbox.onGround = true
 evilbox.moveVector = { x = 0, y = 0 }
 evilbox.blocked = { left = false, right = false }
 evilbox.other = { left = nil, right = nil }
+evilbox.blockedTimer = 0
 evilbox.dazedTimer = 0
 evilbox.angryTimer = 0
 evilbox.start = { x = 0, y = 0 }
@@ -167,7 +169,9 @@ function evilbox:getLeftRightCallback()
                 other:startStacking()
                 return -1
             end
-            self.dazedTimer = love.timer.getTime() + dazedTime
+            if not self.stopping then
+                self.dazedTimer = love.timer.getTime() + dazedTime
+            end
         end
 
         if relativeVelocityX > 0 then
@@ -338,22 +342,39 @@ function evilbox:update(dt)
             local myX = self.rect.body:getX()
 
             -- Player is to the left of us - padding
-            if othX < myX - self.rect:getWidth() * chasePadding 
-                and not self.blocked.left then
+            if othX < myX - self.rect:getWidth() * chasePadding then
                 self.state = "chasing"
-                self:setVelocity(-maxSpeed, 0)
+                if self.blocked.left then
+                    if self.blockedTimer == 0 then
+                        self.blockedTimer = love.timer.getTime() + blockedTimeout
+                    elseif love.timer.getTime() > self.blockedTimer then
+                        self.blockedTimer = 0 -- reset
+                        self.chasee = nil
+                    end
+                else
+                    -- We have a target and isn't blocked, chase!
+                    self:setVelocity(-maxSpeed, 0)
+                end
 
                 -- Player is to the right of us + padding
-            elseif othX > myX + self.rect:getWidth() * chasePadding 
-                and not self.blocked.right then
+            elseif othX > myX + self.rect:getWidth() * chasePadding then
                 self.state = "chasing"
-                self:setVelocity(maxSpeed, 0)
+                if self.blocked.right then
+                    if self.blockedTimer == 0 then
+                        self.blockedTimer = love.timer.getTime() + blockedTimeout
+                    elseif love.timer.getTime() > self.blockedTimer then
+                        self.blockedTimer = 0 -- reset
+                        self.chasee = nil
+                    end
+                else
+                    -- We have a target and isn't blocked, chase!
+                    self:setVelocity(maxSpeed, 0)
+                end
 
                 -- Player is on top of us, we don't like that
             elseif self.state ~= "angry" then
-                self:setVelocity(0, 0)
                 self.state = "angry"
-
+                self:setVelocity(0, 0)
             end
             -- Otherwise, idle
         else
