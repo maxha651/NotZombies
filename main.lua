@@ -9,7 +9,7 @@ playerCollisionMask = 2
 evilboxCollisionMask = 3
 oneMeter = 70
 
-debugInfo = false
+debugInfo = false 
 physicsDebug = false 
 
 -- Loaded from Tiled map
@@ -120,10 +120,11 @@ function love.draw()
     -- Draw the map and all objects within
     map:draw()
 
-    -- Draw Collision Map (useful for debugging)
-    love.graphics.setColor(255, 0, 0, 255)
-    --map:box2d_draw(collision)
-    love.graphics.setColor(255, 255, 255, 255)
+    if physicsDebug then
+        love.graphics.setColor(255, 0, 0, 255)
+        map:box2d_draw(collision)
+        love.graphics.setColor(255, 255, 255, 255)
+    end
  
     for npcType, _ in pairs(npcs) do
         for _, npc in ipairs(npcs[npcType]) do

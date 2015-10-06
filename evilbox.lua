@@ -19,6 +19,8 @@ local animDuration = 0.15
 local blockedTimeout = 3
 local angryTime = animDuration * 5
 local dazedTime = 3
+local chaseRangeX = 1000
+local chaseRangeY = 500
 
 evilbox.label = "evilbox"
 evilbox.state = "ground"
@@ -318,10 +320,13 @@ function evilbox:update(dt)
             self.circle.body:setPosition(self.rect:getX(), self.rect:getY())
             self.circle.body:setLinearVelocity(0,0)
         end
-        --elseif not self.onGround and not self.stopping then
-        --    local _, oldVelY = self.rect.body:getLinearVelocity()
-        --    self.rect.body:setLinearVelocity(0, oldVelY + 9.82 * dt)
-        --end
+
+        -- Check if chasee out of range
+        if self.chasee and 
+            (math.abs(self.chasee:getX() - self.rect:getX()) > chaseRangeX or
+             math.abs(self.chasee:getY() - self.rect:getY()) > chaseRangeY) then
+            self.chasee = nil
+        end
 
         -- First check if incapacitated
         if love.timer.getTime() < self.dazedTimer then 
@@ -352,6 +357,7 @@ function evilbox:update(dt)
                         self.chasee = nil
                     end
                 else
+                    self.blockedTimer = 0
                     -- We have a target and isn't blocked, chase!
                     self:setVelocity(-maxSpeed, 0)
                 end
@@ -373,11 +379,14 @@ function evilbox:update(dt)
 
                 -- Player is on top of us, we don't like that
             elseif self.state ~= "angry" then
+                self.blockedTimer = 0 -- reset
                 self.state = "angry"
                 self:setVelocity(0, 0)
             end
             -- Otherwise, idle
         else
+            -- Keep same speed here (we want it to keep moving even if it's 
+            -- lost track of player
             self.state = "idle"
             -- Just to be sure
             self.chasee = nil
