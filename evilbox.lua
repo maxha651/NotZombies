@@ -265,7 +265,13 @@ function evilbox:update(dt)
         if self.rect:getEnabled() then
             local x, y = self.rect:getX(), self.rect:getY()
 
-            self.world:rayCast(x, y, x, y - (self.rect:getHeight()/2 + topRaycastPadding), 
+            self.world:rayCast(x - self.rect:getWidth()/2, y, 
+                               x - (self.rect:getWidth()/2 - sideRaycastPadding), 
+                               y - (self.rect:getHeight()/2 + topRaycastPadding), 
+                               self.topCallback)
+            self.world:rayCast(x + self.rect:getWidth()/2, y, 
+                               x + (self.rect:getWidth()/2 - sideRaycastPadding), 
+                               y - (self.rect:getHeight()/2 + topRaycastPadding), 
                                self.topCallback)
             self.world:rayCast(x - self.rect:getWidth()/2, y, 
                                x - (self.rect:getWidth()/2 - sideRaycastPadding), 
@@ -437,7 +443,7 @@ function evilbox:update(dt)
         elseif diffX * self.rect.body:getLinearVelocity() < 0 then
             -- Stop immediately if we're moving away from controller
             self.rect.body:setLinearVelocity(0,0)
-        else
+        elseif diffX * self.rect.body:getLinearVelocity() > 0 then
             -- Otherwise stop smoothly
             self:setVelocity(0,0)
         end
