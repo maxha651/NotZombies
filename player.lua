@@ -170,12 +170,14 @@ function player:update(dt)
 
     self.state = self.onGround and "ground" or "air"
 
-    self.circle.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
-
     velX, velY = self.circle.body:getLinearVelocity()
-    if math.abs(velX) > self.maxSpeed then
-        self.circle.body:setLinearVelocity(velX / math.abs(velX) * self.maxSpeed, velY)
-    elseif math.abs(velX) < self.floorSpeed then
+
+    -- Apply force if below maxSpeed (or trying to stop)
+    if velX * self.moveVector.x < self.maxSpeed then
+        self.circle.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
+    end
+
+    if math.abs(velX) < self.floorSpeed then
         velX = 0
         self.circle.body:setLinearVelocity(velX, velY)
     elseif velX * self.moveVector.x <= 0 then -- Not moving or trying to stop

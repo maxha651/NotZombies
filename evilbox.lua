@@ -7,7 +7,7 @@ local imgPath = "gfx/characters/evilbox.png"
 local animImgPath = "gfx/characters/evileye-ani.png"
 
 local maxSpeed = 100
-local density = 0.1
+local mass = 1000
 local topRaycastPadding = 3
 local groundRaycastPadding = 3
 local sideRaycastPadding = 3
@@ -210,7 +210,7 @@ function evilbox:load(world, x, y, width, height)
     self.rect.body:setType("kinematic")
     self.rect.fixture:setRestitution(0.0) -- bounce
     self.rect.body:setSleepingAllowed(false)
-    self.rect.body:setMass(width*height*density)
+    self.rect.body:setMass(mass)
     self.rect.body:setFixedRotation(true)
     self.rect.body:setLinearVelocity(0, 0)
     self.rect.fixture:setUserData(self)
@@ -218,13 +218,13 @@ function evilbox:load(world, x, y, width, height)
 
     self.circle = love.filesystem.load("circle.lua")()
     self.circle:load(world, x, y, width/2 - 2)
-    self.circle:setEnabled(false)
     self.circle.fixture:setRestitution(0.0) -- bounce
     self.circle.body:setSleepingAllowed(false)
-    self.circle.body:setMass(width*height*density)
+    self.circle.body:setMass(mass) -- Apparently doesn't mean shit, set on enable
     self.circle.body:setFixedRotation(true)
     self.circle.fixture:setUserData(self)
     self.circle.fixture:setCategory(evilboxCollisionMask)
+    self.circle:setEnabled(false)
 
     self.anim.img = love.graphics.newImage(animImgPath)
     self.anim.grid = anim8.newGrid(tileWidth, tileHeight, self.anim.img:getWidth(), 
@@ -312,11 +312,13 @@ function evilbox:update(dt)
         if self.onGround and not self.rect:getEnabled() then
             self.circle:setEnabled(false)
             self.rect:setEnabled(true)
+            self.rect.body:setMass(mass) -- Needed for circle, not sure here
             self.rect.body:setPosition(self.circle:getX(), self.circle:getY())
             self.rect.body:setLinearVelocity(0,0)
         elseif not self.onGround and self.rect:getEnabled() then
             self.rect:setEnabled(false)
             self.circle:setEnabled(true)
+            self.circle.body:setMass(mass) -- I shouldn't have to do this...
             self.circle.body:setPosition(self.rect:getX(), self.rect:getY())
             self.circle.body:setLinearVelocity(0,0)
         end
