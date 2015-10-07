@@ -16,9 +16,9 @@ local stackTime = 0.3
 local tileHeight = 70
 local tileWidth = 70
 local animDuration = 0.15
-local blockedTimeout = 3
+local blockedTimeout = 1
 local angryTime = animDuration * 5
-local dazedTime = 3
+local dazedTime = angryTime
 local chaseRangeX = 1000
 local chaseRangeY = 500
 
@@ -107,6 +107,7 @@ function evilbox:getTopCallback()
             end
             self.tmpstate.other.top = other
             self.state = "topControlled"
+            self.chasee = nil
         end
         return 0
     end

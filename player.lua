@@ -159,7 +159,7 @@ function player:update(dt)
                   self.circle:getX() - self.circle:getRadius(), self.circle:getY(), 
                   self.leftRightCallback)
     self.world:rayCast(self.circle:getX(), self.circle:getY(), 
-                  self.circle:getX(), self.circle:getY() - (self.circle:getRadius() + 1), 
+                  self.circle:getX(), self.circle:getY() - (self.circle:getRadius() + 3), 
                   self.topCallback)
 
     if self.blocked.right and self.blocked.left then
