@@ -850,7 +850,7 @@ return {
         },
         {
           id = 43,
-          name = "start",
+          name = "",
           type = "checkpoint",
           shape = "rectangle",
           x = 8540,
@@ -878,7 +878,7 @@ return {
         },
         {
           id = 45,
-          name = "",
+          name = "start",
           type = "checkpoint",
           shape = "rectangle",
           x = 12040,
