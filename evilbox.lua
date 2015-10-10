@@ -123,7 +123,7 @@ function evilbox:getGroundCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
 
-        if other == self or other.label == "player" then
+        if other == self or other.label == "player" or other.label == "checkpoint" then
             return -1
         end
 
@@ -145,7 +145,7 @@ function evilbox:getLeftRightCallback()
 
         local other = fixture:getUserData()
 
-        if other == self or other.label == "player" then
+        if other == self or other.label == "player" or other.label == "checkpoint" then
             return -1
         end
 

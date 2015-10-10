@@ -61,7 +61,6 @@ function player:getLeftRightCallback()
         if other == self then
             return -1
         elseif other.label == "checkpoint" then
-            print ("Enabled checkpoint at:", other.x, other.y)
             self.checkpoint = other
             return -1
         end

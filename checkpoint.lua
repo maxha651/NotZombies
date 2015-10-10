@@ -3,6 +3,7 @@
 
 checkpoint = {}
 
+checkpoint.label = "checkpoint"
 checkpoint.x = 0
 checkpoint.y = 0
 checkpoint.width = 0
@@ -27,6 +28,7 @@ function checkpoint:load(world, x, y, width, height)
 
     self.rect.body:setType("static")
     self.rect.fixture:setSensor(true)
+    self.rect.fixture:setMask(evilboxCollisionMask)
     self.rect.fixture:setUserData(self)
 
     self.leftRightCallback = self:getLeftRightCallback()
