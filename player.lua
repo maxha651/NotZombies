@@ -6,7 +6,7 @@ player = {}
 local playerStart = { x = 2500, y = 1400 }
 local radius = 20
 local mass = 25
-local imgPath = "gfx/characters/circle-ph.png"
+local imgPath = "gfx/characters/player.png"
 local yOfDeath = 5000
 
 player.label = "player"
