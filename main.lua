@@ -10,7 +10,7 @@ evilboxCollisionMask = 3
 oneMeter = 70
 
 debugInfo = false 
-physicsDebug = false 
+physicsDebug = true 
 
 -- Loaded from Tiled map
 tileWidth = 0
@@ -56,7 +56,7 @@ function love.load()
     input.load()
 
     -- Load Tiled map
-    map = sti.new("map/map04.lua", { "box2d" })
+    map = sti.new("map/map05.lua", { "box2d" })
     tileWidth = map.tileWidth
     tileHeight = map.tileHeight
 

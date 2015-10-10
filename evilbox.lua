@@ -95,6 +95,10 @@ function evilbox:getTopCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
 
+        if other == self then
+            return -1
+        end
+
         -- TODO HACK
         if other.label == "evilbox" and other.rect.fixture:getMask() == evilboxCollisionMask then
             return -1
@@ -169,7 +173,7 @@ function evilbox:getLeftRightCallback()
                 --self.other[dirString == "left" and "right" or "left"] then
                 -- if two boxes (or more) crash into another (still) one,
                 -- then stack the crashee. This collision should be ignored
-                other:startStacking()
+                --other:startStacking() Disabled for now
                 return -1
             end
             if not self.stopping then
@@ -263,7 +267,7 @@ function evilbox:update(dt)
         self.tmpstate.onGround = false
         self.tmpstate.blocked = { left = false, right = false }
         self.tmpstate.other = {}
-        if self.rect:getEnabled() then
+        if not self.circle:getEnabled() then
             local x, y = self.rect:getX(), self.rect:getY()
 
             self.world:rayCast(x - self.rect:getWidth()/2, y, 
@@ -287,7 +291,7 @@ function evilbox:update(dt)
                                y, self.leftRightCallback)
             self.world:rayCast(x, y, x - (self.rect:getWidth()/2 + sideRaycastPadding), y, 
                                self.leftRightCallback)
-        elseif self.circle:getEnabled() then
+        else
             local x, y = self.circle:getX(), self.circle:getY()
             -- We only care whether we're on ground or not
             self.world:rayCast(x, y, x,y + self.rect:getHeight()/2 + groundRaycastPadding, 
@@ -314,20 +318,22 @@ function evilbox:update(dt)
         end
     end
 
-    local function updatePhysics()
-
-        if self.onGround and not self.rect:getEnabled() then
+    local function updatePhysics() 
+        if self.onGround and self.circle:getEnabled() then
             self.circle:setEnabled(false)
-            self.rect:setEnabled(true)
             self.rect.body:setMass(mass) -- Needed for circle, not sure here
             self.rect.body:setPosition(self.circle:getX(), self.circle:getY())
             self.rect.body:setLinearVelocity(0,0)
-        elseif not self.onGround and self.rect:getEnabled() then
-            self.rect:setEnabled(false)
+        elseif not self.onGround and not self.circle:getEnabled() then
             self.circle:setEnabled(true)
+            self.circle.fixture:setMask(evilboxCollisionMask);
             self.circle.body:setMass(mass) -- I shouldn't have to do this...
             self.circle.body:setPosition(self.rect:getX(), self.rect:getY())
             self.circle.body:setLinearVelocity(0,0)
+        end
+
+        if self.circle:getEnabled() then
+            self.rect.body:setPosition(self.circle:getX(), self.circle:getY())
         end
 
         -- Check if chasee out of range
@@ -485,14 +491,14 @@ function evilbox:setVelocity(x, y)
 end
 
 function evilbox:draw()
-    if (self.rect:getEnabled()) then
-        self.anim[self.anim.current]:draw(self.anim.img, 
-                                          self.rect:getX() - self.rect:getWidth()/2, 
-                                          self.rect:getY() - self.rect:getHeight()/2)
-    elseif (self.circle:getEnabled()) then
+    if self.circle:getEnabled() then
         self.anim[self.anim.current]:draw(self.anim.img, 
                                           self.circle:getX() - self.circle:getRadius(), 
                                           self.circle:getY() - self.circle:getRadius())
+    else
+        self.anim[self.anim.current]:draw(self.anim.img, 
+                                          self.rect:getX() - self.rect:getWidth()/2, 
+                                          self.rect:getY() - self.rect:getHeight()/2)
     end
     self.rect:draw()
     self.circle:draw()
