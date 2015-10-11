@@ -176,8 +176,9 @@ function evilbox:getLeftRightCallback()
                 --self.other[dirString == "left" and "right" or "left"] then
                 -- if two boxes (or more) crash into another (still) one,
                 -- then stack the crashee. This collision should be ignored
-                --other:startStacking() Disabled for now
-                return -1
+                -- !! NOT USED !!
+                --other:startStacking()
+                --return -1
             end
             if not self.stopping then
                 self.dazedTimer = love.timer.getTime() + dazedTime
