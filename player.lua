@@ -8,12 +8,14 @@ local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/player.png"
 local yOfDeath = 5000
+local minJump = 0.25
+local jumpExp = 6
+local jumpForce = 75000
 
 player.label = "player"
 
-player.acceleration = { air = 20000, ground = 50000 }
-player.maxSpeed = 250
-player.jumpForce = 100000
+player.acceleration = { air = 15000, ground = 20000 }
+player.maxSpeed = 200
 player.jumpPoolMax = 1
 player.friction = { air = 0.1, ground = 500 }
 player.floorSpeed = 0.005
@@ -22,7 +24,7 @@ player.start = { x = playerStart.x, y = playerStart.y }
 player.state = "ground"
 player.onGround = false
 player.moveVector = { x = 0, y = 0 }
-player.jumpPool = jumpPoolMax
+player.jumpPool = player.jumpPoolMax
 player.blocked = { left = false, right = false }
 
 player.circle = nil
@@ -110,7 +112,7 @@ function player:load(world)
     self.circle = love.filesystem.load("circle.lua")()
     self.circle:load(world, playerStart.x, playerStart.y, radius, imgPath)
 
-    self.circle.fixture:setRestitution(0.1) -- bounce
+    self.circle.fixture:setRestitution(0.05) -- bounce
     self.circle.body:setSleepingAllowed(false)
     self.circle.body:setMass(mass)
     self.circle.fixture:setUserData(self)
@@ -139,7 +141,9 @@ function player:update(dt)
         self:dead()
     end
 
-    if input.getJump() ~= self.jump then
+    if input.getJump() ~= self.jump and 
+        -- Make sure we jump a minimum distance
+        (self.jumpPool == self.jumpPoolMax or self.jumpPool < self.jumpPoolMax * (1-minJump)) then
         self.jumpPool = self.jumpPoolMax
         self.jump = input.getJump()
     end
@@ -169,10 +173,15 @@ function player:update(dt)
 
     self.state = self.onGround and "ground" or "air"
 
-    velX, velY = self.circle.body:getLinearVelocity()
+    local velX, velY = self.circle.body:getLinearVelocity()
+    local moveDir = self.moveVector.x < 0 and -1 or self.moveVector.x > 0 and 1 or 0
+    local maxSpeed = self.maxSpeed * math.abs(self.moveVector.x)^2
+    maxSpeed = math.max(0, 2*(maxSpeed-0.5))
 
     -- Apply force if below maxSpeed (or trying to stop)
-    if velX * self.moveVector.x < self.maxSpeed then
+    if self.onGround and velX * moveDir < maxSpeed then
+        self.circle.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
+    elseif not self.onGround and velX * moveDir < maxSpeed/2 then
         self.circle.body:applyForce(self.acceleration[self.state] * self.moveVector.x, 0)
     end
 
@@ -184,7 +193,7 @@ function player:update(dt)
     end
 
     if self.jump and self.jumpPool > 0 and (self.onGround or self.jumpPool ~= self.jumpPoolMax) then
-        self.circle.body:applyForce(0, -1 * self.jumpForce * self.jumpPool^10)
+        self.circle.body:applyForce(0, -1 * jumpForce * self.jumpPool^jumpExp)
         self.jumpPool = self.jumpPool - dt
     end
 end
