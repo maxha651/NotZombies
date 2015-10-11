@@ -7,7 +7,7 @@ local imgPath = "gfx/characters/evilbox.png"
 local animImgPath = "gfx/characters/evileye-ani.png"
 
 local maxSpeed = 100
-local mass = 1000
+local mass = 300
 local topRaycastPadding = 3
 local groundRaycastPadding = 3
 local sideRaycastPadding = 3
@@ -131,6 +131,7 @@ function evilbox:getGroundCallback()
         local oldX, oldY = self.rect.body:getPosition()
         if oldY ~= y - self.rect:getHeight()/2 then
             self.rect.body:setPosition(oldX, y - self.rect:getHeight()/2)
+            self.rect.body:setLinearVelocity(self.rect.body:getLinearVelocity(), 0)
         end
         return 0
     end
@@ -182,7 +183,8 @@ function evilbox:getLeftRightCallback()
         end
 
         if relativeVelocityX > 0 then
-            self.rect.body:setLinearVelocity(0,0)
+            local _, oldVelY = self.rect.body:getLinearVelocity()
+            self.rect.body:setLinearVelocity(0, oldVelY)
             self.rect.body:setPosition(x - dir * (self.rect:getWidth()/2), oldY)
         end
 
@@ -278,14 +280,20 @@ function evilbox:update(dt)
                                x + (self.rect:getWidth()/2 - sideRaycastPadding), 
                                y - (self.rect:getHeight()/2 + topRaycastPadding), 
                                self.topCallback)
-            self.world:rayCast(x - self.rect:getWidth()/2, y, 
-                               x - (self.rect:getWidth()/2 - sideRaycastPadding), 
-                               y + self.rect:getHeight()/2 + groundRaycastPadding, 
-                               self.groundCallback)
-            self.world:rayCast(x + self.rect:getWidth()/2, y, 
-                               x + (self.rect:getWidth()/2 - sideRaycastPadding), 
-                               y + self.rect:getHeight()/2 + groundRaycastPadding, 
-                               self.groundCallback)
+            if not self.onGround then
+                -- Just so we don't get quick/bad onGround/not onGround switching
+                self.world:rayCast(x, y, x, y + self.rect:getHeight()/2 + groundRaycastPadding, 
+                                   self.groundCallback)
+            else
+                self.world:rayCast(x - self.rect:getWidth()/2, y, 
+                                   x - (self.rect:getWidth()/2 - sideRaycastPadding), 
+                                   y + self.rect:getHeight()/2 + groundRaycastPadding, 
+                                   self.groundCallback)
+                self.world:rayCast(x + self.rect:getWidth()/2, y, 
+                                   x + (self.rect:getWidth()/2 - sideRaycastPadding), 
+                                   y + self.rect:getHeight()/2 + groundRaycastPadding, 
+                                   self.groundCallback)
+            end
             self.world:rayCast(x, y, 
                                x + (self.rect:getWidth()/2 + sideRaycastPadding), 
                                y, self.leftRightCallback)
@@ -319,6 +327,7 @@ function evilbox:update(dt)
     end
 
     local function updatePhysics() 
+        --[[
         if self.onGround and self.circle:getEnabled() then
             self.circle:setEnabled(false)
             self.rect.body:setMass(mass) -- Needed for circle, not sure here
@@ -331,6 +340,7 @@ function evilbox:update(dt)
             self.circle.body:setPosition(self.rect:getX(), self.rect:getY())
             self.circle.body:setLinearVelocity(0,0)
         end
+        --]]
 
         if self.circle:getEnabled() then
             self.rect.body:setPosition(self.circle:getX(), self.circle:getY())
@@ -343,8 +353,16 @@ function evilbox:update(dt)
             self.chasee = nil
         end
 
-        -- First check if incapacitated
-        if love.timer.getTime() < self.dazedTimer then 
+        -- Can't stop gravity, keep first. But this loop is stupid
+        if not self.onGround then
+            self.state = "falling"
+            self.chasee = nil
+
+            local _, oldVelY = self.rect.body:getLinearVelocity()
+            self.rect.body:setLinearVelocity(0, oldVelY + dt * 9.82 * oneMeter)
+            self.stopping = false -- Will be weird if this does stuff while falling
+            -- First check if incapacitated
+        elseif love.timer.getTime() < self.dazedTimer then 
             self.state = "dazed"
             -- Forget about chasing
             self.chasee = nil
@@ -398,8 +416,8 @@ function evilbox:update(dt)
                 self.state = "angry"
                 self:setVelocity(0, 0)
             end
-            -- Otherwise, idle
         else
+            -- onGround and not self.chasee (I hope/think)
             -- Keep same speed here (we want it to keep moving even if it's 
             -- lost track of player
             self.state = "idle"
@@ -409,9 +427,10 @@ function evilbox:update(dt)
     end
 
     local function updateStopVelocity()
+        local oldVelX, oldVelY = self.rect.body:getLinearVelocity()
         if self.stopping then
-            if self.rect.body:getLinearVelocity() < 0 and self.blocked.left or
-                self.rect.body:getLinearVelocity() > 0 and self.blocked.right then
+            if oldVelX < 0 and self.blocked.left or
+                oldVelX > 0 and self.blocked.right then
                 -- We are blocked, stop immediately
                 self.stopping = false
                 return
@@ -423,14 +442,14 @@ function evilbox:update(dt)
             currX = currX + width / 2
             lastX = lastX + width / 2
             if math.abs(currX % width) > width*0.75 and math.abs(lastX % width) < width*0.25 then
-                self.rect.body:setLinearVelocity(0, 0)
+                self.rect.body:setLinearVelocity(0, oldVelY)
                 -- Setting proper pos done in raycast instead... 
                 --self.rect.body:setPosition((currX + (width - currX % width)) - width/2, 
                 --                           self.rect.body:getY())
                 self.stopping = false
             end
             if math.abs(currX % width) < width*0.25 and math.abs(lastX % width) > width*0.75 then
-                self.rect.body:setLinearVelocity(0, 0)
+                self.rect.body:setLinearVelocity(0, oldVelY)
                 --self.rect.body:setPosition((currX - currX % width) - width/2, 
                 --                           self.rect.body:getY())
                 self.stopping = false
@@ -440,12 +459,14 @@ function evilbox:update(dt)
         self.lastPosition.x = self.rect.body:getX()
     end
 
+    -- Doesn't control Y right now since I like the effect it gives i.e. funky
+    -- falling
     local function updateTopControlled()
         local diffX = self.other.top:getX() - self.rect:getX()
         local otherVelX = self.other.top.rect.body:getLinearVelocity()
         if (diffX * otherVelX > 0) and (diffX > 0 and not self.blocked.right or
                                         diffX < 0 and not self.blocked.left) then
-            self.rect.body:setPosition(self.other.top:getX(), self.rect:getY())
+            --self.rect.body:setPosition(self.other.top:getX(), self.rect:getY())
             self.rect.body:setLinearVelocity(otherVelX, 0)
         elseif diffX * self.rect.body:getLinearVelocity() < 0 then
             -- Stop immediately if we're moving away from controller
@@ -482,8 +503,10 @@ function evilbox:update(dt)
 end
 
 function evilbox:setVelocity(x, y)
-    if x == 0 and self.rect.body:getLinearVelocity() ~= 0 then
+    local oldX = self.rect.body:getLinearVelocity()
+    if x == 0 and oldX ~= 0 then
         self.stopping = true
+        self.rect.body:setLinearVelocity(oldX, y)
     else
         self.rect.body:setLinearVelocity(x, y)
     end
