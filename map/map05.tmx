@@ -212,8 +212,8 @@
   </properties>
   <object id="3" type="checkpoint" gid="19" x="4200" y="1400" width="70" height="70"/>
   <object id="6" type="checkpoint" gid="19" x="5320" y="1400" width="70" height="70"/>
-  <object id="21" name="start" type="checkpoint" gid="19" x="2380" y="1400" width="70" height="70"/>
-  <object id="43" type="checkpoint" gid="19" x="8540" y="2310" width="70" height="70"/>
+  <object id="21" type="checkpoint" gid="19" x="2380" y="1400" width="70" height="70"/>
+  <object id="43" name="start" type="checkpoint" gid="19" x="8540" y="2310" width="70" height="70"/>
   <object id="44" type="checkpoint" gid="19" x="10360" y="1680" width="70" height="70"/>
   <object id="45" type="checkpoint" gid="19" x="12040" y="1890" width="70" height="70"/>
   <object id="46" type="checkpoint" gid="19" x="13650" y="2240" width="70" height="70"/>

@@ -123,7 +123,9 @@ function evilbox:getGroundCallback()
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
 
-        if other == self or other.label == "player" or other.label == "checkpoint" then
+        if other == self or other.label == "player" or other.label == "checkpoint" or 
+            -- Special case: we're on another falling box
+            other.label == "evilbox" and not other.onGround then
             return -1
         end
 
