@@ -10,7 +10,7 @@ evilboxCollisionMask = 3
 oneMeter = 70
 
 debugInfo = false 
-physicsDebug = false 
+physicsDebug = true 
 
 -- Loaded from Tiled map
 tileWidth = 0
