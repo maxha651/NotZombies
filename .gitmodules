@@ -7,3 +7,6 @@
 [submodule "anim8"]
 	path = anim8
 	url = https://github.com/kikito/anim8.git
+[submodule "shine"]
+	path = shine
+	url = https://github.com/vrld/shine.git
