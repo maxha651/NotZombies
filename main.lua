@@ -69,6 +69,9 @@ function love.load()
     player:load(world)
 
     if npcs.checkpoint and npcs.checkpoint.start then
+        npcs.checkpoint.start.currentScale = 1
+        npcs.checkpoint.start.state = "active"
+        npcs.checkpoint.start.activator = player
         player.checkpoint = npcs.checkpoint.start
         player:reload()
     end
