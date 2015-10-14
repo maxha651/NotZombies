@@ -5,9 +5,11 @@ circle.shape = nil
 circle.body = nil
 circle.img = nil
 circle.world = nil
+circle.radius = 20 -- For graphics only
 
 function circle:load(world, x, y, rad, imgPath)
     self.world = world
+    self.radius = rad
 
     if imgPath then
         self.img = love.graphics.newImage(imgPath);
@@ -20,7 +22,7 @@ end
 
 function circle:draw()
     if self.img ~= nil then
-        local radius = self.shape:getRadius()
+        local radius = self.radius
         local scale = 2*radius / self.img:getWidth()
         love.graphics.push()
         love.graphics.translate(self.body:getX(), (self.body:getY()))

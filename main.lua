@@ -47,8 +47,11 @@ local function reload()
     end
 
     player:reload(dt)
-end
 
+    spawningPlayer = true
+    spawnRotation = 0
+    spawnScale = 0
+end
 
 function love.load()
     love.handlers.reload = reload
@@ -73,7 +76,7 @@ function love.load()
         npcs.checkpoint.start.state = "active"
         npcs.checkpoint.start.activator = player
         player.checkpoint = npcs.checkpoint.start
-        player:reload()
+        reload()
     end
 end
 
@@ -85,6 +88,17 @@ end
 
 function love.update(dt)
     require("lurker/lurker").update()
+
+    if spawningPlayer then
+        spawnScale = spawnScale + dt
+        if spawnScale >= 1 then
+            spawnScale = 1
+            spawningPlayer = false
+        end
+        player.circle.body:setAngle(player.circle.body:getAngle() + 10 * dt)
+        player.circle.radius = spawnScale * 20
+        return
+    end
     
     if love.keyboard.isDown('r') then
         reload()

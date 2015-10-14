@@ -103,6 +103,7 @@ function checkpoint:draw()
     if scale > 0 then
         self.anim.anim:draw(self.anim.img, self.x - scale * tileWidth/2, 
                             self.y - scale * tileHeight/2, 0, scale)
+        --[[ -- Draw player somewhat transparent
         if self.activator then
             love.graphics.push()
             love.graphics.translate(self.x, self.y)
@@ -115,6 +116,7 @@ function checkpoint:draw()
             love.graphics.setColor(255,255,255,255)
             love.graphics.pop()
         end
+        --]]
     end
 end
 
