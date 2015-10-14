@@ -38,7 +38,7 @@ function checkpoint:getLeftRightCallback()
     local self = self
     local function callback(fixture, x, y, xn, yn, fraction)
         other = fixture:getUserData()
-        if other.label == "player" then
+        if other.label == "player" and self.state == "inactive" then
             self.activator = other
             other.checkpoint = self
             self:switchState("active")

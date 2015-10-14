@@ -62,9 +62,6 @@ function player:getLeftRightCallback()
         other = fixture:getUserData()
         if other == self then
             return -1
-        elseif other.label == "checkpoint" then
-            self.checkpoint = other
-            return -1
         end
 
         local oldX, oldY = self.circle.body:getPosition()
