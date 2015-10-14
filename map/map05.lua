@@ -364,6 +364,25 @@ return {
           }
         }
       }
+    },
+    {
+      name = "buttons-sheet",
+      firstgid = 81,
+      tilewidth = 70,
+      tileheight = 70,
+      spacing = 0,
+      margin = 10,
+      image = "../gfx/gui/buttons-sheet.png",
+      imagewidth = 370,
+      imageheight = 370,
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      properties = {},
+      terrains = {},
+      tilecount = 25,
+      tiles = {}
     }
   },
   layers = {
