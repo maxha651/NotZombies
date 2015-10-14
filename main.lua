@@ -94,8 +94,8 @@ function love.load()
 
     local godsray = shine.godsray{ exposure = 0.1, decay = 1, density = 1 }
 
-    post_effect = gaussianblur:chain(vignette)
-    cp_post_effect = godsray:chain(gaussianblur:chain(vignette))
+    post_effect = gaussianblur
+    cp_post_effect = godsray:chain(gaussianblur)
     density = 1
 end
 
@@ -147,7 +147,7 @@ function love.update(dt)
         return
     end
     
-    if love.keyboard.isDown('r') then
+    if input.getReset() then
         reload()
     end
 

@@ -32,6 +32,15 @@ function input.load()
   gamepadJump = tactile.gamepadButton('a', PLAYER_ONE)
 
   jump = tactile.newButton(keyboardJump, gamepadJump)
+
+  keyboardReset = tactile.key('r')
+  gamepadReset = tactile.gamepadButton('y', PLAYER_ONE)
+
+  reset = tactile.newButton(keyboardReset, gamepadReset)
+end
+
+function input.getReset()
+  return reset:isDown()
 end
 
 function input.getJump()
