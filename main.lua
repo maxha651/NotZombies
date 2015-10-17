@@ -12,6 +12,7 @@ oneMeter = 70
 
 debugInfo = false 
 physicsDebug = false 
+fpsCounter = false
 
 -- Loaded from Tiled map
 tileWidth = 0
@@ -241,7 +242,9 @@ function love.draw()
         love.graphics.setColor(255, 255, 255, 255)
     end
 
-    love.graphics.print(love.timer.getFPS(), love.graphics:getWidth()+translateX-50, translateY+10)
+    if fpsCounter then
+        love.graphics.print(love.timer.getFPS(), love.graphics:getWidth()+translateX-50, translateY+10)
+    end
 end
 
 function printDebug()
