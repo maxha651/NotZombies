@@ -35,7 +35,7 @@ local function loadCustomLayers(map, world)
         if custom then
             assert(layerHandlers[custom], "Handler missing for layer: ", custom)
             customLayers[custom] = k
-            npcs[custom] = layerHandlers[custom].initLayer(map, k, world)
+            npcs[custom] = layerHandlers[custom].initLayer(map, k, world, player)
         end
     end
 end

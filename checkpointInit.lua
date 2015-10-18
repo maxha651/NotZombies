@@ -4,7 +4,7 @@
 checkpointInit = {}
 
 -- Create checkpoint objects from Tiled stuff
-function checkpointInit.initLayer(map, layer, world)
+function checkpointInit.initLayer(map, layer, _, player)
     local objects = map.layers[layer].objects
     
     local checkpointList = {}
@@ -12,7 +12,7 @@ function checkpointInit.initLayer(map, layer, world)
     for _, object in pairs(objects) do
         local checkpoint = love.filesystem.load("checkpoint.lua")()
 
-        checkpoint:load(world, object.x + map.tilewidth/2,
+        checkpoint:load(player, object.x + map.tilewidth/2,
                         object.y - map.tileheight/2, object.width, object.height)
 
         checkpointList[#checkpointList +1] = checkpoint
