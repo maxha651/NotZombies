@@ -77,22 +77,8 @@ function love.load()
     end
 
     love.graphics.setBackgroundColor(0x80,0x80,0x80)
-
-    -- load the effects you want
-    local grain = shine.filmgrain()
-
-    -- many effects can be parametrized
-    grain.opacity = 0.2
-
-    -- multiple parameters can be set at once
-    local vignette = shine.vignette()
-    vignette.parameters = {radius = 0.9, opacity = 0.4}
-
-    -- you can also provide parameters on effect construction
-    local desaturate = shine.desaturate{strength = 0.6, tint = {255,250,200}}
-
-    local gaussianblur = shine.gaussianblur{ sigma = 0.8 }
-
+    
+    local gaussianblur = shine.gaussianblur{ sigma = 0.6 }
     local godsray = shine.godsray{ exposure = 0.1, decay = 1, density = 1 }
 
     post_effect = gaussianblur
