@@ -11,7 +11,7 @@ local yOfDeath = 5000
 local minJump = 1
 local jumpExp = 6
 local jumpForce = 75000
-local jumpMemory = 0.075
+local jumpMemory = 0.15
 
 player.label = "player"
 
