@@ -107,8 +107,6 @@ function love.focus(inFocus)
 end
 
 function love.update(dt)
-    require("lurker/lurker").update()
-
     if destroyingPlayer then
         cp_post_effect.density = density
         cp_post_effect.exposure = 0.055 + 0.1 * density
