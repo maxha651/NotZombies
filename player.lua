@@ -8,9 +8,10 @@ local radius = 20
 local mass = 25
 local imgPath = "gfx/characters/player.png"
 local yOfDeath = 5000
-local minJump = 0.25
+local minJump = 1
 local jumpExp = 6
 local jumpForce = 75000
+local jumpMemory = 0.075
 
 player.label = "player"
 
@@ -25,6 +26,7 @@ player.state = "ground"
 player.onGround = false
 player.moveVector = { x = 0, y = 0 }
 player.jumpPool = player.jumpPoolMax
+player.lastJump = -math.huge
 player.blocked = { left = false, right = false }
 
 player.circle = nil
@@ -109,7 +111,7 @@ function player:load(world)
     self.circle = love.filesystem.load("circle.lua")()
     self.circle:load(world, playerStart.x, playerStart.y, radius, imgPath)
 
-    self.circle.fixture:setRestitution(0.05) -- bounce
+    self.circle.fixture:setRestitution(0) -- bounce
     self.circle.body:setSleepingAllowed(false)
     self.circle.body:setMass(mass)
     self.circle.fixture:setUserData(self)
@@ -138,11 +140,19 @@ function player:update(dt)
         self:dead()
     end
 
-    if input.getJump() ~= self.jump and 
+    local jump = input.getJump()
+    if jump then
+        self.lastJump = love.timer.getTime()
+    elseif self.jumpPool == self.jumpPoolMax and 
+        love.timer.getTime() - self.lastJump < jumpMemory then
+        jump = true
+    end
+
+    if jump ~= self.jump and
         -- Make sure we jump a minimum distance
         (self.jumpPool == self.jumpPoolMax or self.jumpPool < self.jumpPoolMax * (1-minJump)) then
         self.jumpPool = self.jumpPoolMax
-        self.jump = input.getJump()
+        self.jump = jump
     end
     self.moveVector.x = input.getXAxis()
     self.moveVector.y = input.getYAxis()
@@ -189,6 +199,10 @@ function player:update(dt)
         self.circle.body:applyForce(-velX*self.friction[self.state], 0)
     end
 
+    if self.jump and self.onGround and self.jumpPool == self.jumpPoolMax then
+        -- Stop so we don't get irregular jump heights
+        self.circle.body:setLinearVelocity(self.circle.body:getLinearVelocity(),0)
+    end
     if self.jump and self.jumpPool > 0 and (self.onGround or self.jumpPool ~= self.jumpPoolMax) then
         self.circle.body:applyForce(0, -1 * jumpForce * self.jumpPool^jumpExp)
         self.jumpPool = self.jumpPool - dt
