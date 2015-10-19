@@ -12,12 +12,13 @@ local minJump = 1
 local jumpExp = 6
 local jumpForce = 75000
 local jumpMemory = 0.15
+local jumpPoolMax = 1
+local jumpTime = 0.5
 
 player.label = "player"
 
 player.acceleration = { air = 15000, ground = 20000 }
 player.maxSpeed = 200
-player.jumpPoolMax = 1
 player.friction = { air = 0.1, ground = 500 }
 player.floorSpeed = 0.005
 player.start = { x = playerStart.x, y = playerStart.y }
@@ -25,7 +26,7 @@ player.start = { x = playerStart.x, y = playerStart.y }
 player.state = "ground"
 player.onGround = false
 player.moveVector = { x = 0, y = 0 }
-player.jumpPool = player.jumpPoolMax
+player.jumpPool = 0
 player.lastJump = -math.huge
 player.blocked = { left = false, right = false }
 
@@ -140,20 +141,6 @@ function player:update(dt)
         self:dead()
     end
 
-    local jump = input.getJump()
-    if jump then
-        self.lastJump = love.timer.getTime()
-    elseif self.jumpPool == self.jumpPoolMax and 
-        love.timer.getTime() - self.lastJump < jumpMemory then
-        jump = true
-    end
-
-    if jump ~= self.jump and
-        -- Make sure we jump a minimum distance
-        (self.jumpPool == self.jumpPoolMax or self.jumpPool < self.jumpPoolMax * (1-minJump)) then
-        self.jumpPool = self.jumpPoolMax
-        self.jump = jump
-    end
     self.moveVector.x = input.getXAxis()
     self.moveVector.y = input.getYAxis()
 
@@ -180,6 +167,20 @@ function player:update(dt)
 
     self.state = self.onGround and "ground" or "air"
 
+    local jump = input.getJump()
+    if not self.jump and jump then
+        self.lastJump = love.timer.getTime()
+    elseif love.timer.getTime() - self.lastJump < jumpMemory then
+        jump = true
+    end
+    self.jump = jump
+
+    if self.jump and self.jumpPool <= jumpPoolMax - jumpTime and self.onGround then
+        self.jumpPool = jumpPoolMax
+        -- Stop so we don't get irregular jump heights
+        self.circle.body:setLinearVelocity(self.circle.body:getLinearVelocity(),0)
+    end
+
     local velX, velY = self.circle.body:getLinearVelocity()
     local moveDir = self.moveVector.x < 0 and -1 or self.moveVector.x > 0 and 1 or 0
     local maxSpeed = self.maxSpeed * math.abs(self.moveVector.x)^2
@@ -199,11 +200,7 @@ function player:update(dt)
         self.circle.body:applyForce(-velX*self.friction[self.state], 0)
     end
 
-    if self.jump and self.onGround and self.jumpPool == self.jumpPoolMax then
-        -- Stop so we don't get irregular jump heights
-        self.circle.body:setLinearVelocity(self.circle.body:getLinearVelocity(),0)
-    end
-    if self.jump and self.jumpPool > 0 and (self.onGround or self.jumpPool ~= self.jumpPoolMax) then
+    if self.jumpPool > jumpPoolMax - jumpTime then
         self.circle.body:applyForce(0, -1 * jumpForce * self.jumpPool^jumpExp)
         self.jumpPool = self.jumpPool - dt
     end
