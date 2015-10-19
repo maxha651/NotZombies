@@ -14,6 +14,8 @@ debugInfo = false
 physicsDebug = false 
 fpsCounter = false
 
+start = true
+
 -- Loaded from Tiled map
 tileWidth = 0
 tileHeight = 0
@@ -57,6 +59,10 @@ function love.load()
     tileWidth = map.tileWidth
     tileHeight = map.tileHeight
 
+    -- Load Tiled maps for menus
+    pause_map = sti.new("map/pause_menu.lua")
+    start_map = sti.new("map/start_menu.lua")
+
     -- Load physics
     love.physics.setMeter(oneMeter)
     world = love.physics.newWorld(0, 9.81*oneMeter, true)
@@ -92,7 +98,31 @@ end
 function love.focus(inFocus)
 end
 
+function love.keypressed(key, isrepeat)
+    keypressed = true
+end
+
 function love.update(dt)
+    input.update(dt)
+
+    if input.getStartPressed() then
+        paused = not paused
+    end
+
+    -- Pause with start until any key is pressed
+    if start and keypressed then
+        start, paused = false, false
+    end
+
+    if paused then
+        return
+    end
+
+    if start then 
+        -- Run one update to init at start, then pause
+        paused = true
+    end
+
     if destroyingPlayer then
         cp_post_effect.density = density
         cp_post_effect.exposure = 0.055 + 0.1 * density
@@ -214,22 +244,47 @@ function love.draw()
         end)
     end
 
-    love.graphics.translate(-translateX, -translateY)
-
-    -- Draw Range culls unnecessary tiles
-    map:setDrawRange(translateX, translateY, love.graphics:getWidth(), 
-                     love.graphics:getHeight())
-
     if physicsDebug then
+        love.graphics.push()
+
+        love.graphics.translate(-translateX, -translateY)
+
+        -- Draw Range culls unnecessary tiles
+        map:setDrawRange(translateX, translateY, love.graphics:getWidth(), 
+                         love.graphics:getHeight())
+
         love.graphics.setColor(255, 0, 0, 255)
         map:box2d_draw(collision)
         love.graphics.setColor(255, 255, 255, 255)
+
+        love.graphics.pop()
+    end
+
+    if start then
+        drawMenu(start_map)
+    elseif paused then
+        drawMenu(pause_map)
     end
 
     if fpsCounter then
         love.graphics.print(love.timer.getFPS(), love.graphics:getWidth()+translateX-50, translateY+10)
     end
 end
+
+function drawMenu(map)
+    love.graphics.push()
+
+    local scale = love.graphics.getHeight() / (map.height * 
+                                               map.tileheight)
+    love.graphics.translate((love.graphics.getWidth() - 
+                             scale * map.width * map.tilewidth) / 2, 0)
+    love.graphics.scale(scale)
+
+    map:draw()
+
+    love.graphics.pop()
+end
+
 
 function printDebug()
     time = love.timer.getTime()

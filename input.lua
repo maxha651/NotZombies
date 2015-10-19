@@ -6,7 +6,12 @@ input = {}
 local PLAYER_ONE = 1
 
 local horizontal, vertical
-local jump
+local jump, reset, start
+
+local startWasDown = false
+local startPressed = false
+local startTimeout = 1
+local lastStartPress = -math.huge
 
 function input.load()
   upKey = tactile.key("up")
@@ -37,6 +42,29 @@ function input.load()
   gamepadReset = tactile.gamepadButton('y', PLAYER_ONE)
 
   reset = tactile.newButton(keyboardReset, gamepadReset)
+
+  keyboardStart = tactile.key('escape')
+  gamepadStart = tactile.gamepadButton('start', PLAYER_ONE)
+
+  start = tactile.newButton(keyboardStart, gamepadStart)
+end
+
+function input.update()
+    jump:update()
+    reset:update()
+    start:update()
+
+    -- tactile bug ?
+    if start:isDown() and not startWasDown then 
+        startPressed = true
+    else
+        startPressed = false
+    end
+    startWasDown = start:isDown()
+end
+
+function input.getStartPressed()
+    return startPressed
 end
 
 function input.getReset()
