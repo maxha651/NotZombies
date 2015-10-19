@@ -229,7 +229,7 @@ function evilbox:load(world, x, y, width, height)
     self.circle = love.filesystem.load("circle.lua")()
     self.circle:load(world, x, y, width/2 - 2)
     self.circle.fixture:setRestitution(0.0) -- bounce
-    self.circle.body:setSleepingAllowed(true)
+    self.circle.body:setSleepingAllowed(false)
     self.circle.body:setMass(mass) -- Apparently doesn't mean shit, set on enable
     self.circle.body:setFixedRotation(true)
     self.circle.fixture:setUserData(self)
