@@ -1,6 +1,12 @@
 # Not Zombies #
 A game project in the TDDD23 course
 
+## How to run ##
+1. Install Love2d from https://love2d.org/
+2. Put all files in a .zip
+3. Rename the .zip file to .love
+4. Run the .love file
+
 ## Not mine ##
 External stuff used in this project
 
