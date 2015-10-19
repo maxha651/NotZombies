@@ -25,14 +25,8 @@ checkpoint.lastStateSwitch = 0
 checkpoint.activator = nil
 
 function checkpoint:switchState(state)
-    if state == "active" and self.state == "inactive" or
-        state == "dead" and self.state == "active" then
-
-        self.lastStateSwitch = love.timer.getTime()
-        self.state = state
-    else
-        --print(string.format("Couldn't do state switch %s -> %s", self.state, state))
-    end
+    self.lastStateSwitch = love.timer.getTime()
+    self.state = state
 end
 
 function checkpoint:load(player, x, y, width, height)
@@ -45,12 +39,32 @@ function checkpoint:load(player, x, y, width, height)
     self.anim.anim = anim8.newAnimation(self.anim.grid("1-4",1, 2,1, 4,1, 1,1, 3,1), animDuration)
 
     self.playerImg = love.graphics.newImage(playerImgPath)
+
+    if self.name == "end" then 
+        self.scale.inactive = 1
+    end
 end
 
 function checkpoint:reload()
+    if self.activator.checkpoint ~= self and self.activator.checkpoint.name == "start" then
+        self:switchState("inactive")
+        self.currentScale = self.scale.inactive
+    elseif self.activator.checkpoint == self then
+        self:switchState("active")
+        self.currentScale = self.scale.active
+    end
 end
 
 function checkpoint:update(dt)
+    if self.name == "end" and
+        math.sqrt((self.activator:getX() - self.x)^2 + (self.activator:getY() - self.y)^2) 
+        <= enableRadius/2 then
+        self.activator.checkpoint = nil
+        self.state = "dead"
+        love.event.push("reload", "hard")
+        return
+    end
+
     if self.state == "inactive" and self.activator and
         math.sqrt((self.activator:getX() - self.x)^2 + (self.activator:getY() - self.y)^2) 
         <= enableRadius then

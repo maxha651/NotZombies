@@ -42,7 +42,11 @@ local function loadCustomLayers(map, world)
     end
 end
 
-local function reload()
+local function reload(arg)
+    if arg == "hard" then
+        print("Thanks for playing!")
+        player.checkpoint = npcs.checkpoint.start
+    end
     density = 0
     destroyingPlayer = true
     spawningPlayer = true
@@ -102,6 +106,10 @@ function love.keypressed(key, isrepeat)
     keypressed = true
 end
 
+function love.joystickpressed(joystick, button)
+    keypressed = true
+end
+
 function love.update(dt)
     input.update(dt)
 
@@ -134,7 +142,7 @@ function love.update(dt)
             destroyingPlayer = false
             for npcType, _ in pairs(npcs) do
                 for _, npc in ipairs(npcs[npcType]) do
-                    npc:reload(dt)
+                    npc:reload()
                 end
                 --map:setObjectCoordinates(map.layers[customLayers[npcType]])
             end

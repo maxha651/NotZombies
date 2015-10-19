@@ -12,6 +12,7 @@ function checkpointInit.initLayer(map, layer, _, player)
     for _, object in pairs(objects) do
         local checkpoint = love.filesystem.load("checkpoint.lua")()
 
+        checkpoint.name = object.name
         checkpoint:load(player, object.x + map.tilewidth/2,
                         object.y - map.tileheight/2, object.width, object.height)
 
