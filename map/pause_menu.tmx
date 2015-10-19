@@ -1,48 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="22" height="22" tilewidth="70" tileheight="70" nextobjectid="2">
- <tileset firstgid="1" name="buttons-sheet" tilewidth="70" tileheight="70" margin="10" tilecount="25">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="22" height="22" tilewidth="70" tileheight="70" nextobjectid="1">
+ <tileset firstgid="1" name="text-medium" tilewidth="140" tileheight="140" spacing="28" margin="28" tilecount="81">
+  <image source="../gfx/gui/text-medium.png" width="1540" height="1540"/>
+ </tileset>
+ <tileset firstgid="82" name="text" tilewidth="70" tileheight="70" spacing="14" margin="14" tilecount="81">
+  <image source="../gfx/gui/text.png" width="770" height="770"/>
+ </tileset>
+ <tileset firstgid="163" name="buttons-sheet" tilewidth="70" tileheight="70" margin="10" tilecount="25">
   <image source="../gfx/gui/buttons-sheet.png" width="370" height="370"/>
- </tileset>
- <tileset firstgid="26" name="blocks" tilewidth="70" tileheight="70" margin="10" tilecount="5">
-  <image source="../gfx/environment/blocks.png" width="370" height="90"/>
-  <tile id="0">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </tile>
-  <tile id="1">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </tile>
-  <tile id="2">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </tile>
-  <tile id="3">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </tile>
-  <tile id="4">
-   <properties>
-    <property name="collidable" value="true"/>
-   </properties>
-  </tile>
- </tileset>
- <tileset firstgid="31" name="text" tilewidth="70" tileheight="70" spacing="14" margin="14" tilecount="49">
-  <image source="../gfx/gui/text.png" width="616" height="616"/>
- </tileset>
- <tileset firstgid="80" name="text-medium" tilewidth="140" tileheight="140" spacing="28" margin="28" tilecount="49">
-  <image source="../gfx/gui/text-medium.png" width="1232" height="1232"/>
  </tileset>
  <layer name="Tile Layer 1" width="22" height="22">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,94,0,0,95,0,0,96,0,0,97,0,0,98,0,0,0,0,0,
+0,0,0,0,19,0,0,20,0,0,21,0,0,22,0,0,23,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -51,17 +23,16 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,4,5,0,11,12,0,0,0,0,0,
-0,0,0,0,0,52,53,54,55,0,0,0,9,10,0,16,17,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,166,167,0,173,174,0,0,0,0,0,
+0,0,0,0,0,109,110,111,112,0,0,0,171,172,0,178,179,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,59,60,61,62,0,0,0,6,7,0,1,0,0,0,0,0,0,
+0,0,0,0,0,118,119,120,121,113,0,0,168,169,0,163,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,66,67,68,69,70,0,0,8,0,0,2,0,0,0,0,0,0,
+0,0,0,0,0,127,128,129,130,131,0,0,170,0,0,164,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <imagelayer name="Image Layer 1" x="70" y="70"/>
 </map>

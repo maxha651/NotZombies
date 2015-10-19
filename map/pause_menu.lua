@@ -8,12 +8,50 @@ return {
   height = 22,
   tilewidth = 70,
   tileheight = 70,
-  nextobjectid = 2,
+  nextobjectid = 1,
   properties = {},
   tilesets = {
     {
-      name = "buttons-sheet",
+      name = "text-medium",
       firstgid = 1,
+      tilewidth = 140,
+      tileheight = 140,
+      spacing = 28,
+      margin = 28,
+      image = "../gfx/gui/text-medium.png",
+      imagewidth = 1540,
+      imageheight = 1540,
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      properties = {},
+      terrains = {},
+      tilecount = 81,
+      tiles = {}
+    },
+    {
+      name = "text",
+      firstgid = 82,
+      tilewidth = 70,
+      tileheight = 70,
+      spacing = 14,
+      margin = 14,
+      image = "../gfx/gui/text.png",
+      imagewidth = 770,
+      imageheight = 770,
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      properties = {},
+      terrains = {},
+      tilecount = 81,
+      tiles = {}
+    },
+    {
+      name = "buttons-sheet",
+      firstgid = 163,
       tilewidth = 70,
       tileheight = 70,
       spacing = 0,
@@ -28,94 +66,6 @@ return {
       properties = {},
       terrains = {},
       tilecount = 25,
-      tiles = {}
-    },
-    {
-      name = "blocks",
-      firstgid = 26,
-      tilewidth = 70,
-      tileheight = 70,
-      spacing = 0,
-      margin = 10,
-      image = "../gfx/environment/blocks.png",
-      imagewidth = 370,
-      imageheight = 90,
-      tileoffset = {
-        x = 0,
-        y = 0
-      },
-      properties = {},
-      terrains = {},
-      tilecount = 5,
-      tiles = {
-        {
-          id = 0,
-          properties = {
-            ["collidable"] = "true"
-          }
-        },
-        {
-          id = 1,
-          properties = {
-            ["collidable"] = "true"
-          }
-        },
-        {
-          id = 2,
-          properties = {
-            ["collidable"] = "true"
-          }
-        },
-        {
-          id = 3,
-          properties = {
-            ["collidable"] = "true"
-          }
-        },
-        {
-          id = 4,
-          properties = {
-            ["collidable"] = "true"
-          }
-        }
-      }
-    },
-    {
-      name = "text",
-      firstgid = 31,
-      tilewidth = 70,
-      tileheight = 70,
-      spacing = 14,
-      margin = 14,
-      image = "../gfx/gui/text.png",
-      imagewidth = 616,
-      imageheight = 616,
-      tileoffset = {
-        x = 0,
-        y = 0
-      },
-      properties = {},
-      terrains = {},
-      tilecount = 49,
-      tiles = {}
-    },
-    {
-      name = "text-medium",
-      firstgid = 80,
-      tilewidth = 140,
-      tileheight = 140,
-      spacing = 28,
-      margin = 28,
-      image = "../gfx/gui/text-medium.png",
-      imagewidth = 1232,
-      imageheight = 1232,
-      tileoffset = {
-        x = 0,
-        y = 0
-      },
-      properties = {},
-      terrains = {},
-      tilecount = 49,
       tiles = {}
     }
   },
@@ -137,7 +87,7 @@ return {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 94, 0, 0, 95, 0, 0, 96, 0, 0, 97, 0, 0, 98, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 19, 0, 0, 20, 0, 0, 21, 0, 0, 22, 0, 0, 23, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -146,27 +96,17 @@ return {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 0, 11, 12, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 52, 53, 54, 55, 0, 0, 0, 9, 10, 0, 16, 17, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 166, 167, 0, 173, 174, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 109, 110, 111, 112, 0, 0, 0, 171, 172, 0, 178, 179, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 59, 60, 61, 62, 0, 0, 0, 6, 7, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 118, 119, 120, 121, 113, 0, 0, 168, 169, 0, 163, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 66, 67, 68, 69, 70, 0, 0, 8, 0, 0, 2, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 127, 128, 129, 130, 131, 0, 0, 170, 0, 0, 164, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
       }
-    },
-    {
-      type = "imagelayer",
-      name = "Image Layer 1",
-      x = 70,
-      y = 70,
-      visible = true,
-      opacity = 1,
-      image = "",
-      properties = {}
     }
   }
 }
