@@ -59,7 +59,7 @@ function love.load()
     input.load()
 
     -- Load Tiled map
-    map = sti.new("map/map05.lua", { "box2d" })
+    map = sti.new("map/map01.lua", { "box2d" })
     tileWidth = map.tileWidth
     tileHeight = map.tileHeight
 
