@@ -23,6 +23,6 @@ See https://github.com/tesselode/tactile
 See https://github.com/vrld/shine
 
 ## License ##
-TBD (see LICENSE)
+MIT (see LICENSE)
 
 
